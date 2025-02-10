@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { AddTransactionForm } from "@/components/features/transactions/AddTransactionForm";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { AnimatePresence } from "framer-motion";
 
 export default function DashboardPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -41,10 +42,26 @@ export default function DashboardPage() {
         // Add the transaction
         setTransactions((prev) => [transaction, ...prev]);
 
-        // Update the account balance
+        // Update the account balances
         setAccounts((prevAccounts) =>
             prevAccounts.map((account) => {
-                if (account.id === transaction.accountId) {
+                if (transaction.type === "transfer") {
+                    if (account.id === transaction.accountId) {
+                        // Deduct from source account
+                        return {
+                            ...account,
+                            balance: account.balance - transaction.amount,
+                        };
+                    }
+                    if (account.id === transaction.toAccountId) {
+                        // Add to destination account
+                        return {
+                            ...account,
+                            balance: account.balance + transaction.amount,
+                        };
+                    }
+                } else if (account.id === transaction.accountId) {
+                    // Handle regular income/expense
                     return {
                         ...account,
                         balance:
@@ -98,7 +115,10 @@ export default function DashboardPage() {
                             Add Transaction
                         </Button>
                     </SheetTrigger>
-                    <SheetContent className="w-[360px]">
+                    <SheetContent
+                        isOpen={sheetOpen}
+                        onCloseComplete={() => setSheetOpen(false)}
+                    >
                         <SheetHeader>
                             <SheetTitle>Add Transaction</SheetTitle>
                         </SheetHeader>

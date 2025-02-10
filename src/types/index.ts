@@ -7,10 +7,13 @@ export type Account = {
     balance: number;
 };
 
+export type TransactionType = "income" | "expense" | "transfer";
+
 export type Transaction = {
-    type: "income" | "expense";
+    type: TransactionType;
     amount: number;
     description: string;
     date: string;
-    accountId: string; // Link transaction to account
+    accountId: string;
+    toAccountId?: string; // For transfer transactions
 };

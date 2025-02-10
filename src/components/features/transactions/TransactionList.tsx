@@ -63,6 +63,51 @@ export function TransactionList({
         });
     };
 
+    const getTransactionDisplay = (transaction: Transaction) => {
+        const account = getAccount(transaction.accountId);
+
+        if (transaction.type === "transfer" && transaction.toAccountId) {
+            const toAccount = getAccount(transaction.toAccountId);
+            return {
+                color: "text-blue-600",
+                prefix: "→",
+                accountDisplay: (
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                            <AccountIcon
+                                type={account?.type || "bank"}
+                                className="h-3.5 w-3.5"
+                            />
+                            <span>{account?.name}</span>
+                        </div>
+                        <span className="px-2">→</span>
+                        <div className="flex items-center gap-1.5">
+                            <AccountIcon
+                                type={toAccount?.type || "bank"}
+                                className="h-3.5 w-3.5"
+                            />
+                            <span>{toAccount?.name}</span>
+                        </div>
+                    </div>
+                ),
+            };
+        }
+
+        return {
+            color:
+                transaction.type === "income"
+                    ? "text-green-600"
+                    : "text-red-600",
+            prefix: transaction.type === "income" ? "+" : "-",
+            accountDisplay: account && (
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <AccountIcon type={account.type} className="h-3.5 w-3.5" />
+                    <span>{account.name}</span>
+                </div>
+            ),
+        };
+    };
+
     if (transactions.length === 0) {
         return <p className="text-muted-foreground">No transactions yet</p>;
     }
@@ -71,11 +116,11 @@ export function TransactionList({
         <div className="space-y-4">
             <AnimatePresence initial={false}>
                 {transactions.map((transaction, index) => {
-                    const account = getAccount(transaction.accountId);
                     const balanceBefore = getBalanceBeforeTransaction(
                         transaction,
                         index
                     );
+                    const display = getTransactionDisplay(transaction);
 
                     return (
                         <motion.div
@@ -98,43 +143,22 @@ export function TransactionList({
                                 onMouseEnter={() => setHoveredIndex(index)}
                                 onMouseLeave={() => setHoveredIndex(null)}
                             >
-                                <motion.div
-                                    className="flex-1 p-4 border rounded-lg"
-                                    whileHover={{
-                                        transition: { duration: 0.2 },
-                                    }}
-                                    layout
-                                >
+                                <div className="flex-1 p-4 border rounded-lg">
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-1">
                                             <p className="font-medium">
                                                 {transaction.description}
                                             </p>
-                                            {account && (
-                                                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                                                    <AccountIcon
-                                                        type={account.type}
-                                                        className="h-3.5 w-3.5"
-                                                    />
-                                                    <span>{account.name}</span>
-                                                </div>
-                                            )}
+                                            {display.accountDisplay}
                                             <p className="text-sm text-muted-foreground">
                                                 {formatDate(transaction.date)}
                                             </p>
                                         </div>
                                         <div className="space-y-1 text-right">
                                             <p
-                                                className={`font-bold ${
-                                                    transaction.type ===
-                                                    "income"
-                                                        ? "text-green-600"
-                                                        : "text-red-600"
-                                                }`}
+                                                className={`font-bold ${display.color}`}
                                             >
-                                                {transaction.type === "income"
-                                                    ? "+"
-                                                    : "-"}
+                                                {display.prefix}
                                                 {formatAmount(
                                                     transaction.amount
                                                 )}
@@ -145,7 +169,7 @@ export function TransactionList({
                                             </p>
                                         </div>
                                     </div>
-                                </motion.div>
+                                </div>
 
                                 <AnimatePresence>
                                     {hoveredIndex === index &&

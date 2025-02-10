@@ -63,7 +63,14 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     const formatAmount = (amount: number) => {
         // Convert the amount from USD to the selected currency
         const convertedAmount = convertAmount(amount, currencies[0], currency);
-        return `${currency.symbol}${convertedAmount.toFixed(2)}`;
+
+        // Format with commas and 2 decimal places
+        const formattedNumber = new Intl.NumberFormat("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(convertedAmount);
+
+        return `${currency.symbol}${formattedNumber}`;
     };
 
     return (

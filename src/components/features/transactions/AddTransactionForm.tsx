@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Transaction, Account } from "@/types";
+import { Transaction, Account, TransactionType } from "@/types";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import {
@@ -28,41 +28,36 @@ export function AddTransactionForm({
     const { currency, convertAmount } = useCurrency();
     const [amount, setAmount] = useState("");
     const [description, setDescription] = useState("");
-    const [type, setType] = useState<"income" | "expense">("income");
+    const [type, setType] = useState<TransactionType>("income");
     const [selectedAccountId, setSelectedAccountId] = useState<string>("");
+    const [toAccountId, setToAccountId] = useState<string>("");
     const [date, setDate] = useState<Date>(new Date());
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!selectedAccountId) {
-            // You might want to add proper form validation/error handling
+        if (!selectedAccountId || (type === "transfer" && !toAccountId)) {
             return;
         }
 
-        // Convert input amount to USD before storing
-        const usdAmount = convertAmount(
-            parseFloat(amount),
-            currency,
-            currencies[0] // USD
-        );
-
         const transaction: Transaction = {
             type,
-            amount: usdAmount, // Store in USD
+            amount: parseFloat(amount),
             description,
             date: date.toISOString(),
             accountId: selectedAccountId,
+            ...(type === "transfer" && { toAccountId }),
         };
 
         onSubmit(transaction);
         setAmount("");
         setDescription("");
+        setToAccountId("");
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex gap-4">
+            <div className="flex gap-2">
                 <Button
                     type="button"
                     variant={type === "income" ? "default" : "outline"}
@@ -79,6 +74,14 @@ export function AddTransactionForm({
                 >
                     Expense
                 </Button>
+                <Button
+                    type="button"
+                    variant={type === "transfer" ? "default" : "outline"}
+                    onClick={() => setType("transfer")}
+                    className="flex-1"
+                >
+                    Transfer
+                </Button>
             </div>
 
             <div className="space-y-2">
@@ -87,7 +90,13 @@ export function AddTransactionForm({
                     onValueChange={setSelectedAccountId}
                 >
                     <SelectTrigger>
-                        <SelectValue placeholder="Select an account" />
+                        <SelectValue
+                            placeholder={
+                                type === "transfer"
+                                    ? "From Account"
+                                    : "Select Account"
+                            }
+                        />
                     </SelectTrigger>
                     <SelectContent>
                         {accounts.map((account) => (
@@ -105,6 +114,34 @@ export function AddTransactionForm({
                 </Select>
             </div>
 
+            {type === "transfer" && (
+                <div className="space-y-2">
+                    <Select value={toAccountId} onValueChange={setToAccountId}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="To Account" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {accounts
+                                .filter((acc) => acc.id !== selectedAccountId)
+                                .map((account) => (
+                                    <SelectItem
+                                        key={account.id}
+                                        value={account.id}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <AccountIcon
+                                                type={account.type}
+                                                className="h-4 w-4"
+                                            />
+                                            <span>{account.name}</span>
+                                        </div>
+                                    </SelectItem>
+                                ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            )}
+
             <div className="space-y-2">
                 <Input
                     type="number"
@@ -114,6 +151,7 @@ export function AddTransactionForm({
                     required
                 />
             </div>
+
             <div className="space-y-2">
                 <Input
                     placeholder="Description"
@@ -135,7 +173,9 @@ export function AddTransactionForm({
             <Button
                 type="submit"
                 className="w-full"
-                disabled={!selectedAccountId}
+                disabled={
+                    !selectedAccountId || (type === "transfer" && !toAccountId)
+                }
             >
                 Add Transaction
             </Button>

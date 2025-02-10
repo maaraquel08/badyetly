@@ -27,15 +27,7 @@ const SheetOverlay = React.forwardRef<
         )}
         {...props}
         ref={ref}
-        asChild
-    >
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-        />
-    </SheetPrimitive.Overlay>
+    />
 ));
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
@@ -47,7 +39,7 @@ const sheetVariants = cva(
                 top: "inset-x-0 top-0 border-b",
                 bottom: "inset-x-0 bottom-0 border-t",
                 left: "inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm",
-                right: "inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm",
+                right: "top-[24px] bottom-[24px] right-[24px] h-[calc(100vh-48px)] w-[360px] rounded-xl border",
             },
         },
         defaultVariants: {
@@ -73,12 +65,13 @@ const SheetContent = React.forwardRef<
             asChild
         >
             <motion.div
-                initial={{ x: side === "right" ? 360 : -360, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: side === "right" ? 360 : -360, opacity: 0 }}
-                transition={{
-                    duration: 0.03,
-                    ease: "easeInOut",
+                initial={{ x: side === "right" ? 400 : -400 }}
+                animate={{
+                    x: 0,
+                    transition: {
+                        duration: 0.03,
+                        ease: "easeOut",
+                    },
                 }}
             >
                 {children}
