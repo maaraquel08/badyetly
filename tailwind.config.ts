@@ -1,7 +1,7 @@
 import { fontFamily } from "tailwindcss/defaultTheme";
 import type { Config } from "tailwindcss";
 
-export default {
+const config: Config = {
     darkMode: ["class"],
     content: [
         "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -18,8 +18,8 @@ export default {
         },
         extend: {
             fontFamily: {
-                sans: ["var(--font-geist-sans)", ...fontFamily.sans],
-                mono: ["var(--font-geist-mono)", ...fontFamily.mono],
+                sans: ["var(--font-geist-sans)"],
+                mono: ["var(--font-geist-mono)"],
             },
             colors: {
                 border: "hsl(var(--border))",
@@ -72,3 +72,5 @@ export default {
     },
     plugins: [],
 } satisfies Config;
+
+export default config;

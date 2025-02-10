@@ -1,16 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { GeistSans, GeistMono } from "geist/font";
 import "./globals.css";
-
-const geistSans = Geist({
-    subsets: ["latin"],
-    variable: "--font-geist-sans",
-});
-
-const geistMono = Geist_Mono({
-    subsets: ["latin"],
-    variable: "--font-geist-mono",
-});
+import { Navigation } from "@/components/layout/Navigation";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
 export const metadata: Metadata = {
     title: "Financial Tracker",
@@ -19,15 +11,24 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
     children,
-}: Readonly<{
+}: {
     children: React.ReactNode;
-}>) {
+}) {
     return (
         <html
             lang="en"
-            className={`${geistSans.variable} ${geistMono.variable}`}
+            className={`${GeistSans.variable} ${GeistMono.variable}`}
         >
-            <body className={`font-sans antialiased`}>{children}</body>
+            <body className="min-h-screen font-sans antialiased">
+                <CurrencyProvider>
+                    <header className="border-b">
+                        <div className="container mx-auto p-4">
+                            <Navigation />
+                        </div>
+                    </header>
+                    <main>{children}</main>
+                </CurrencyProvider>
+            </body>
         </html>
     );
 }
