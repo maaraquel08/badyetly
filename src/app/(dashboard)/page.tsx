@@ -16,15 +16,12 @@ import {
 import { AddTransactionForm } from "@/components/features/transactions/AddTransactionForm";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { AnimatePresence } from "framer-motion";
+import { useAccounts } from "@/contexts/AccountsContext";
 
 export default function DashboardPage() {
+    const { accounts, setAccounts } = useAccounts();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [sheetOpen, setSheetOpen] = useState(false);
-    const [accounts, setAccounts] = useState<Account[]>([
-        { id: "1", name: "Cash Wallet", type: "cash", balance: 0 },
-        { id: "2", name: "Main Bank", type: "bank", balance: 0 },
-        { id: "3", name: "Credit Card", type: "credit-card", balance: 0 },
-    ]);
     const { formatAmount } = useCurrency();
 
     // Calculate totals
@@ -115,10 +112,7 @@ export default function DashboardPage() {
                             Add Transaction
                         </Button>
                     </SheetTrigger>
-                    <SheetContent
-                        isOpen={sheetOpen}
-                        onCloseComplete={() => setSheetOpen(false)}
-                    >
+                    <SheetContent>
                         <SheetHeader>
                             <SheetTitle>Add Transaction</SheetTitle>
                         </SheetHeader>

@@ -16,25 +16,40 @@ import {
 import { AddTransactionForm } from "@/components/features/transactions/AddTransactionForm";
 import { TransactionList } from "@/components/features/transactions/TransactionList";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { AddAccountForm } from "@/components/features/accounts/AddAccountForm";
+import { useAccounts } from "@/contexts/AccountsContext";
 
 export default function AccountsPage() {
-    const [accounts, setAccounts] = useState<Account[]>([
-        { id: "1", name: "Cash Wallet", type: "cash", balance: 0 },
-        { id: "2", name: "Main Bank", type: "bank", balance: 0 },
-        { id: "3", name: "Credit Card", type: "credit-card", balance: 0 },
-    ]);
+    const { accounts, setAccounts } = useAccounts();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [sheetOpen, setSheetOpen] = useState(false);
     const { formatAmount } = useCurrency();
+    const [addAccountOpen, setAddAccountOpen] = useState(false);
 
     const handleAddTransaction = (transaction: Transaction) => {
         // Add the transaction
         setTransactions((prev) => [transaction, ...prev]);
 
-        // Update the account balance
+        // Update the account balances
         setAccounts((prevAccounts) =>
             prevAccounts.map((account) => {
-                if (account.id === transaction.accountId) {
+                if (transaction.type === "transfer") {
+                    if (account.id === transaction.accountId) {
+                        // Deduct from source account
+                        return {
+                            ...account,
+                            balance: account.balance - transaction.amount,
+                        };
+                    }
+                    if (account.id === transaction.toAccountId) {
+                        // Add to destination account
+                        return {
+                            ...account,
+                            balance: account.balance + transaction.amount,
+                        };
+                    }
+                } else if (account.id === transaction.accountId) {
+                    // Handle regular income/expense
                     return {
                         ...account,
                         balance:
@@ -75,6 +90,11 @@ export default function AccountsPage() {
         );
     };
 
+    const handleAddAccount = (newAccount: Omit<Account, "id">) => {
+        const id = (accounts.length + 1).toString();
+        setAccounts((prev) => [...prev, { ...newAccount, id }]);
+    };
+
     return (
         <div className="container mx-auto p-4 space-y-8">
             <div className="flex justify-between items-center">
@@ -82,10 +102,29 @@ export default function AccountsPage() {
                     Accounts
                 </h1>
                 <div className="flex items-center gap-4">
-                    <Button variant="outline">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Account
-                    </Button>
+                    <Sheet
+                        open={addAccountOpen}
+                        onOpenChange={setAddAccountOpen}
+                    >
+                        <SheetTrigger asChild>
+                            <Button variant="outline">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Add Account
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent>
+                            <SheetHeader>
+                                <SheetTitle>Add Account</SheetTitle>
+                            </SheetHeader>
+                            <div className="mt-4">
+                                <AddAccountForm
+                                    onSubmit={handleAddAccount}
+                                    onSuccess={() => setAddAccountOpen(false)}
+                                />
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+
                     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                         <SheetTrigger asChild>
                             <Button>

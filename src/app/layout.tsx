@@ -3,6 +3,7 @@ import { GeistSans, GeistMono } from "geist/font";
 import "./globals.css";
 import { Navigation } from "@/components/layout/Navigation";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { AccountsProvider } from "@/contexts/AccountsContext";
 
 export const metadata: Metadata = {
     title: "Financial Tracker",
@@ -21,12 +22,14 @@ export default function RootLayout({
         >
             <body className="min-h-screen font-sans antialiased">
                 <CurrencyProvider>
-                    <header className="border-b">
-                        <div className="container mx-auto p-4">
-                            <Navigation />
-                        </div>
-                    </header>
-                    <main>{children}</main>
+                    <AccountsProvider>
+                        <header className="border-b">
+                            <div className="container mx-auto p-4">
+                                <Navigation />
+                            </div>
+                        </header>
+                        <main>{children}</main>
+                    </AccountsProvider>
                 </CurrencyProvider>
             </body>
         </html>
