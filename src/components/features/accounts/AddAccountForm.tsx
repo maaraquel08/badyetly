@@ -21,7 +21,7 @@ type AddAccountFormProps = {
 
 export function AddAccountForm({ onSubmit, onSuccess }: AddAccountFormProps) {
     const [name, setName] = useState("");
-    const [type, setType] = useState<AccountType | "">("");
+    const [type, setType] = useState<AccountType>("bank");
     const [initialBalance, setInitialBalance] = useState("");
     const { currency, convertAmount } = useCurrency();
 
@@ -45,7 +45,7 @@ export function AddAccountForm({ onSubmit, onSuccess }: AddAccountFormProps) {
 
         // Reset form
         setName("");
-        setType("");
+        setType("bank");
         setInitialBalance("");
 
         // Call onSuccess callback
@@ -74,7 +74,10 @@ export function AddAccountForm({ onSubmit, onSuccess }: AddAccountFormProps) {
             </div>
 
             <div className="space-y-2">
-                <Select value={type} onValueChange={setType}>
+                <Select
+                    value={type}
+                    onValueChange={(value: AccountType) => setType(value)}
+                >
                     <SelectTrigger>
                         <SelectValue placeholder="Select Account Type" />
                     </SelectTrigger>

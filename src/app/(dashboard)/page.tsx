@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TransactionList } from "@/components/features/transactions/TransactionList";
-import { Transaction, Account } from "@/types";
+import { Transaction } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import {
@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/sheet";
 import { AddTransactionForm } from "@/components/features/transactions/AddTransactionForm";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { AnimatePresence } from "framer-motion";
 import { useAccounts } from "@/contexts/AccountsContext";
 
 export default function DashboardPage() {
@@ -33,7 +32,8 @@ export default function DashboardPage() {
         .filter((t) => t.type === "expense")
         .reduce((sum, t) => sum + t.amount, 0);
 
-    const balance = income - expenses;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _balance = income - expenses;
 
     const handleAddTransaction = (transaction: Transaction) => {
         // Add the transaction

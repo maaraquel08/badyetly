@@ -32,12 +32,7 @@ export function TransactionList({
         transaction: Transaction,
         index: number
     ) => {
-        // Get all previous transactions for this account
-        const previousTransactions = transactions
-            .slice(index + 1)
-            .filter((t) => t.accountId === transaction.accountId);
-
-        // Calculate the current balance for this account
+        // Get the account
         const account = getAccount(transaction.accountId);
         if (!account) return 0;
 

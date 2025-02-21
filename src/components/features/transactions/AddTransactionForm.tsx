@@ -12,7 +12,6 @@ import {
     TransferCategory,
 } from "@/types";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
 import {
     Select,
     SelectContent,
@@ -42,21 +41,22 @@ import {
     Shield,
     PiggyBank,
     ArrowRightLeft,
-    Wallet,
-    Repeat,
     HandCoins,
 } from "lucide-react";
+import * as React from "react";
 
 type AddTransactionFormProps = {
     onSubmit: (transaction: Transaction) => void;
     accounts: Account[];
 };
 
-const incomeCategories: {
-    value: IncomeCategory;
+type CategoryOption<T> = {
+    value: T;
     label: string;
-    icon: JSX.Element;
-}[] = [
+    icon: React.ReactElement;
+};
+
+const incomeCategories: CategoryOption<IncomeCategory>[] = [
     {
         value: "salary",
         label: "Salary",
@@ -90,11 +90,7 @@ const incomeCategories: {
     },
 ];
 
-const expenseCategories: {
-    value: ExpenseCategory;
-    label: string;
-    icon: JSX.Element;
-}[] = [
+const expenseCategories: CategoryOption<ExpenseCategory>[] = [
     {
         value: "food",
         label: "Food & Dining",
@@ -157,11 +153,7 @@ const expenseCategories: {
     },
 ];
 
-const transferCategories: {
-    value: TransferCategory;
-    label: string;
-    icon: JSX.Element;
-}[] = [
+const transferCategories: CategoryOption<TransferCategory>[] = [
     {
         value: "regular-transfer",
         label: "Regular Transfer",
@@ -204,8 +196,8 @@ export function AddTransactionForm({
     const [description, setDescription] = useState("");
     const [type, setType] = useState<TransactionType>("income");
     const [category, setCategory] = useState<
-        IncomeCategory | ExpenseCategory | TransferCategory | ""
-    >("");
+        IncomeCategory | ExpenseCategory | TransferCategory | null
+    >(null);
     const [selectedAccountId, setSelectedAccountId] = useState<string>("");
     const [toAccountId, setToAccountId] = useState<string>("");
     const [date, setDate] = useState<Date>(new Date());
@@ -250,7 +242,7 @@ export function AddTransactionForm({
         setTransferFee("");
         setDescription("");
         setToAccountId("");
-        setCategory("");
+        setCategory(null);
     };
 
     const getCategoryContent = () => {
@@ -361,7 +353,15 @@ export function AddTransactionForm({
             )}
 
             <div className="space-y-2">
-                <Select value={category} onValueChange={setCategory}>
+                <Select
+                    value={category || ""}
+                    onValueChange={(
+                        value:
+                            | IncomeCategory
+                            | ExpenseCategory
+                            | TransferCategory
+                    ) => setCategory(value)}
+                >
                     <SelectTrigger>
                         <SelectValue
                             placeholder={getCategoryContent().placeholder}
