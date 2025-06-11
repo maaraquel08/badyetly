@@ -1,118 +1,234 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { CalendarIcon, CreditCard, Home, Settings, LogOut } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useAuth } from "@/components/auth-provider"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { CalendarIcon, CreditCard, Home, Settings, LogOut } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/components/auth-provider";
+import { createClient } from "@/lib/supabase";
+import { useEffect, useState } from "react";
 
 export function Sidebar() {
-  const pathname = usePathname()
-  const { toast } = useToast()
-  const { user, signOut } = useAuth()
+    const pathname = usePathname();
+    const { toast } = useToast();
+    const { user, signOut, profileRefreshTrigger } = useAuth();
+    const [userProfile, setUserProfile] = useState<{
+        name: string | null;
+    } | null>(null);
+    const supabase = createClient();
 
-  const routes = [
-    {
-      href: "/dashboard",
-      icon: Home,
-      label: "Dashboard",
-    },
-    {
-      href: "/dashboard/dues",
-      icon: CreditCard,
-      label: "Monthly Dues",
-    },
-    {
-      href: "/dashboard/settings",
-      icon: Settings,
-      label: "Settings",
-    },
-  ]
+    // Fetch user profile from database
+    useEffect(() => {
+        if (user) {
+            const fetchUserProfile = async () => {
+                const { data, error } = await supabase
+                    .from("users")
+                    .select("name")
+                    .eq("id", user.id)
+                    .single();
 
-  const handleSignOut = async () => {
-    try {
-      await signOut()
-      toast({
-        title: "Signed out",
-        description: "You have been signed out successfully.",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign out. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
+                if (!error && data) {
+                    setUserProfile(data);
+                }
+            };
 
-  const getUserInitials = (name: string | null, email: string) => {
-    if (name) {
-      return name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    }
-    return email.slice(0, 2).toUpperCase()
-  }
+            fetchUserProfile();
+        }
+    }, [user, supabase, profileRefreshTrigger]);
 
-  const getUserDisplayName = (name: string | null, email: string) => {
-    return name || email.split("@")[0]
-  }
+    const routes = [
+        {
+            href: "/dashboard",
+            icon: Home,
+            label: "Dashboard",
+        },
+        {
+            href: "/dashboard/dues",
+            icon: CreditCard,
+            label: "Monthly Dues",
+        },
+        {
+            href: "/dashboard/settings",
+            icon: Settings,
+            label: "Settings",
+        },
+    ];
 
-  return (
-    <div className="fixed left-0 top-0 z-50 h-screen w-64 border-r bg-muted/40 hidden md:block">
-      <div className="flex h-full flex-col">
-        {/* Header */}
-        <div className="flex h-16 items-center border-b px-4 flex-shrink-0">
-          <Link href="/dashboard" className="flex items-center space-x-2">
-            <CalendarIcon className="h-6 w-6" />
-            <span className="font-bold">Monthly Dues</span>
-          </Link>
-        </div>
+    const handleSignOut = async () => {
+        try {
+            await signOut();
+            toast({
+                title: "Signed out",
+                description: "You have been signed out successfully.",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to sign out. Please try again.",
+                variant: "destructive",
+            });
+        }
+    };
 
-        {/* Navigation */}
-        <div className="flex-1 space-y-1 p-4 overflow-y-auto">
-          <nav className="grid gap-1">
-            {routes.map((route) => (
-              <Button
-                key={route.href}
-                variant={pathname === route.href ? "secondary" : "ghost"}
-                className={cn("justify-start", pathname === route.href ? "bg-muted font-medium" : "font-normal")}
-                asChild
-              >
-                <Link href={route.href}>
-                  <route.icon className="mr-2 h-4 w-4" />
-                  {route.label}
-                </Link>
-              </Button>
-            ))}
-          </nav>
-        </div>
+    const getUserInitials = (name: string | null, email: string) => {
+        if (name) {
+            return name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2);
+        }
+        return email.slice(0, 2).toUpperCase();
+    };
 
-        {/* User section */}
-        <div className="border-t p-4 flex-shrink-0">
-          <div className="flex items-center space-x-3 mb-3">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback>{user ? getUserInitials(user.user_metadata?.name, user.email!) : "U"}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">
-                {user ? getUserDisplayName(user.user_metadata?.name, user.email!) : "User"}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+    const getUserDisplayName = (name: string | null, email: string) => {
+        return name || email.split("@")[0];
+    };
+
+    const getUserFullName = () => {
+        if (!user) return null;
+
+        // Priority: Database name > Auth metadata name
+        if (userProfile?.name) {
+            return userProfile.name;
+        }
+
+        // Fallback to auth metadata if database name isn't available yet
+        const possibleNames = [
+            user.user_metadata?.name,
+            user.user_metadata?.full_name,
+            user.user_metadata?.given_name && user.user_metadata?.family_name
+                ? `${user.user_metadata.given_name} ${user.user_metadata.family_name}`.trim()
+                : null,
+            user.user_metadata?.given_name,
+            user.user_metadata?.family_name,
+        ].filter(Boolean);
+
+        return possibleNames.length > 0 ? possibleNames[0] : null;
+    };
+
+    const getUserAvatar = () => {
+        if (!user?.email) return null;
+
+        // Use the original URLs as provided by Google OAuth
+        const googlePicture = user.user_metadata?.picture;
+        const avatarUrl = user.user_metadata?.avatar_url;
+
+        // Return Google OAuth picture if available
+        if (googlePicture) {
+            return googlePicture;
+        }
+
+        // Return avatar URL if available
+        if (avatarUrl) {
+            return avatarUrl;
+        }
+
+        return null;
+    };
+
+    return (
+        <div className="fixed left-0 top-0 z-50 h-screen w-64 border-r bg-muted/40 hidden md:block">
+            <div className="flex h-full flex-col">
+                {/* Header */}
+                <div className="flex h-16 items-center border-b px-4 flex-shrink-0">
+                    <Link
+                        href="/dashboard"
+                        className="flex items-center space-x-2"
+                    >
+                        <span className="font-bold text-2xl">Judit.io</span>
+                    </Link>
+                </div>
+
+                {/* Navigation */}
+                <div className="flex-1 space-y-1 p-4 overflow-y-auto">
+                    <nav className="grid gap-1">
+                        {routes.map((route) => (
+                            <Button
+                                key={route.href}
+                                variant={
+                                    pathname === route.href
+                                        ? "secondary"
+                                        : "ghost"
+                                }
+                                className={cn(
+                                    "justify-start",
+                                    pathname === route.href
+                                        ? "bg-muted font-medium"
+                                        : "font-normal"
+                                )}
+                                asChild
+                            >
+                                <Link href={route.href}>
+                                    <route.icon className="mr-2 h-4 w-4" />
+                                    {route.label}
+                                </Link>
+                            </Button>
+                        ))}
+                    </nav>
+                </div>
+
+                {/* User section */}
+                <div className="border-t p-4 flex-shrink-0">
+                    <div className="flex items-center space-x-3 mb-3">
+                        <Avatar className="h-8 w-8">
+                            {getUserAvatar() ? (
+                                <img
+                                    src={getUserAvatar()}
+                                    alt={
+                                        user
+                                            ? getUserDisplayName(
+                                                  getUserFullName(),
+                                                  user.email!
+                                              )
+                                            : "User"
+                                    }
+                                    className="w-full h-full object-cover rounded-full"
+                                />
+                            ) : (
+                                <AvatarFallback className="bg-primary text-primary-foreground">
+                                    {user
+                                        ? getUserInitials(
+                                              getUserFullName(),
+                                              user.email!
+                                          )
+                                        : "U"}
+                                </AvatarFallback>
+                            )}
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                                {user
+                                    ? getUserDisplayName(
+                                          getUserFullName(),
+                                          user.email!
+                                      )
+                                    : "User"}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                                {user?.email}
+                                {user?.email?.endsWith("@gmail.com") && (
+                                    <span className="ml-1 text-xs text-blue-500">
+                                        (Gmail)
+                                    </span>
+                                )}
+                            </p>
+                        </div>
+                    </div>
+                    <Button
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={handleSignOut}
+                    >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign out
+                    </Button>
+                </div>
             </div>
-          </div>
-          <Button variant="ghost" className="w-full justify-start" onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign out
-          </Button>
         </div>
-      </div>
-    </div>
-  )
+    );
 }

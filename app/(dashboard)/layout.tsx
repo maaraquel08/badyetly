@@ -1,23 +1,20 @@
-import type React from "react"
-import { Sidebar } from "@/components/sidebar"
-import SupabaseProvider from "@/components/supabase-provider"
-import { AuthGuard } from "@/components/auth-guard"
+import type React from "react";
+import { Sidebar } from "@/components/sidebar";
+import { AuthGuard } from "@/components/auth-guard";
 
 export default async function DashboardLayout({
-  children,
+    children,
 }: {
-  children: React.ReactNode
+    children: React.ReactNode;
 }) {
-  return (
-    <AuthGuard requireAuth={true}>
-      <SupabaseProvider>
-        <div className="min-h-screen">
-          <Sidebar />
-          <main className="md:ml-64 min-h-screen overflow-y-auto">
-            <div className="p-4 md:p-6">{children}</div>
-          </main>
-        </div>
-      </SupabaseProvider>
-    </AuthGuard>
-  )
+    return (
+        <AuthGuard requireAuth={true}>
+            <div className="min-h-screen">
+                <Sidebar />
+                <main className="md:ml-64 min-h-screen overflow-y-auto">
+                    <div className="p-4 md:p-6">{children}</div>
+                </main>
+            </div>
+        </AuthGuard>
+    );
 }

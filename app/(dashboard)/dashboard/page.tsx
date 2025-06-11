@@ -1,38 +1,56 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { DashboardHeader } from "@/components/dashboard-header"
-import { DashboardCalendar } from "@/components/dashboard-calendar"
-import { AnalyticsCards } from "@/components/analytics-cards"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
-import Link from "next/link"
-import { useSupabase } from "@/components/supabase-provider"
-import { useAuth } from "@/components/auth-provider"
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { DashboardHeader } from "@/components/dashboard-header";
+import { DashboardCalendar } from "@/components/dashboard-calendar";
+import { AnalyticsCards } from "@/components/analytics-cards";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase";
+import { useAuth } from "@/components/auth-provider";
+
+interface DueInstance {
+    id: string;
+    monthly_due_id: string | null;
+    due_date: string;
+    is_paid: boolean | null;
+    paid_on: string | null;
+    created_at: string;
+    monthly_dues: {
+        id: string;
+        title: string;
+        amount: number;
+        category: string;
+        notes: string | null;
+        user_id: string;
+    };
+}
 
 export default function DashboardPage() {
-  const [dueInstances, setDueInstances] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const { supabase } = useSupabase()
-  const { user } = useAuth()
+    const [dueInstances, setDueInstances] = useState<DueInstance[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      fetchDueInstances()
-    }
-  }, [user])
+    useEffect(() => {
+        if (user) {
+            fetchDueInstances();
+        }
+    }, [user]);
 
-  const fetchDueInstances = async () => {
-    if (!user) return
+    const fetchDueInstances = async () => {
+        if (!user) return;
 
-    try {
-      setIsLoading(true)
-      setError(null)
+        try {
+            setLoading(true);
+            setError(null);
 
-      const { data: dueInstancesData, error } = await supabase
-        .from("due_instances")
-        .select(`
+            const supabase = createClient();
+            const { data, error: fetchError } = await supabase
+                .from("due_instances")
+                .select(
+                    `
           *,
           monthly_dues!inner (
             id,
@@ -42,84 +60,89 @@ export default function DashboardPage() {
             notes,
             user_id
           )
-        `)
-        .eq("monthly_dues.user_id", user.id)
-        .order("due_date", { ascending: true })
+        `
+                )
+                .eq("monthly_dues.user_id", user.id)
+                .order("due_date", { ascending: true });
 
-      if (error) {
-        console.error("Error fetching due instances:", error)
-        setError(error.message)
-        return
-      }
+            if (fetchError) throw fetchError;
 
-      setDueInstances(dueInstancesData || [])
-    } catch (error) {
-      console.error("Error:", error)
-      setError(error.message)
-    } finally {
-      setIsLoading(false)
+            setDueInstances(data || []);
+        } catch (err) {
+            setError(
+                err instanceof Error ? err.message : "Failed to load data"
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="space-y-6">
+                <DashboardHeader
+                    heading="Dashboard"
+                    text="Loading your monthly dues..."
+                >
+                    <Link href="/dashboard/dues/new">
+                        <Button>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add New Due
+                        </Button>
+                    </Link>
+                </DashboardHeader>
+                <div className="flex items-center justify-center h-64">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                        <p className="text-muted-foreground">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        );
     }
-  }
 
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Loading user...</p>
-      </div>
-    )
-  }
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <DashboardHeader
+                    heading="Dashboard"
+                    text="There was an error loading your dues."
+                >
+                    <Link href="/dashboard/dues/new">
+                        <Button>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add New Due
+                        </Button>
+                    </Link>
+                </DashboardHeader>
+                <div className="flex items-center justify-center h-64 flex-col">
+                    <p className="text-red-500 mb-4">Error: {error}</p>
+                    <Button onClick={fetchDueInstances}>Try Again</Button>
+                </div>
+            </div>
+        );
+    }
 
-  if (isLoading) {
     return (
-      <div className="space-y-6">
-        <DashboardHeader heading="Dashboard" text="Loading your monthly dues...">
-          <Link href="/dashboard/dues/new">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add New Due
-            </Button>
-          </Link>
-        </DashboardHeader>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Loading...</p>
+        <div className="space-y-6">
+            <DashboardHeader
+                heading="Dashboard"
+                text="View your monthly dues and financial insights."
+            >
+                <Link href="/dashboard/dues/new">
+                    <Button>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add New Due
+                    </Button>
+                </Link>
+            </DashboardHeader>
+
+            <AnalyticsCards dueInstances={dueInstances} />
+
+            <DashboardCalendar
+                dueInstances={dueInstances}
+                onRefresh={fetchDueInstances}
+            />
         </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <DashboardHeader heading="Dashboard" text="There was an error loading your dues.">
-          <Link href="/dashboard/dues/new">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add New Due
-            </Button>
-          </Link>
-        </DashboardHeader>
-        <div className="flex items-center justify-center h-64 flex-col">
-          <p className="text-red-500 mb-4">Error: {error}</p>
-          <Button onClick={fetchDueInstances}>Try Again</Button>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-6">
-      <DashboardHeader heading="Dashboard" text="View your monthly dues and financial insights.">
-        <Link href="/dashboard/dues/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add New Due
-          </Button>
-        </Link>
-      </DashboardHeader>
-
-      <AnalyticsCards dueInstances={dueInstances} />
-
-      <DashboardCalendar dueInstances={dueInstances} onRefresh={fetchDueInstances} />
-    </div>
-  )
+    );
 }

@@ -1,22 +1,4 @@
-import { createBrowserClient } from "@supabase/ssr";
-import type { Database as DatabaseType } from "./database.types";
-
-// Single instance supabase client
-let supabaseClient: ReturnType<
-    typeof createBrowserClient<DatabaseType>
-> | null = null;
-
-export const createClient = () => {
-    if (!supabaseClient) {
-        supabaseClient = createBrowserClient<DatabaseType>(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-    }
-    return supabaseClient;
-};
-
-export type Database = {
+export interface Database {
     public: {
         Tables: {
             users: {
@@ -25,74 +7,65 @@ export type Database = {
                     email: string;
                     name: string | null;
                     created_at: string;
+                    updated_at: string;
                 };
                 Insert: {
-                    id?: string;
+                    id: string;
                     email: string;
                     name?: string | null;
                     created_at?: string;
+                    updated_at?: string;
                 };
                 Update: {
                     id?: string;
                     email?: string;
                     name?: string | null;
                     created_at?: string;
+                    updated_at?: string;
                 };
             };
             monthly_dues: {
                 Row: {
                     id: string;
-                    user_id: string | null;
+                    user_id: string;
                     title: string;
                     amount: number;
                     category: string;
-                    start_date: string;
-                    recurrence: string;
-                    due_day: number | null;
-                    status: string;
                     notes: string | null;
+                    due_day: number;
+                    is_active: boolean;
                     created_at: string;
-                    end_date: string | null;
-                    end_after_occurrences: number | null;
-                    custom_frequency: number | null;
+                    updated_at: string;
                 };
                 Insert: {
                     id?: string;
-                    user_id?: string | null;
+                    user_id: string;
                     title: string;
                     amount: number;
                     category: string;
-                    start_date: string;
-                    recurrence?: string;
-                    due_day?: number | null;
-                    status?: string;
                     notes?: string | null;
+                    due_day: number;
+                    is_active?: boolean;
                     created_at?: string;
-                    end_date?: string | null;
-                    end_after_occurrences?: number | null;
-                    custom_frequency?: number | null;
+                    updated_at?: string;
                 };
                 Update: {
                     id?: string;
-                    user_id?: string | null;
+                    user_id?: string;
                     title?: string;
                     amount?: number;
                     category?: string;
-                    start_date?: string;
-                    recurrence?: string;
-                    due_day?: number | null;
-                    status?: string;
                     notes?: string | null;
+                    due_day?: number;
+                    is_active?: boolean;
                     created_at?: string;
-                    end_date?: string | null;
-                    end_after_occurrences?: number | null;
-                    custom_frequency?: number | null;
+                    updated_at?: string;
                 };
             };
             due_instances: {
                 Row: {
                     id: string;
-                    monthly_due_id: string | null;
+                    monthly_due_id: string;
                     due_date: string;
                     is_paid: boolean | null;
                     paid_on: string | null;
@@ -100,7 +73,7 @@ export type Database = {
                 };
                 Insert: {
                     id?: string;
-                    monthly_due_id?: string | null;
+                    monthly_due_id: string;
                     due_date: string;
                     is_paid?: boolean | null;
                     paid_on?: string | null;
@@ -108,7 +81,7 @@ export type Database = {
                 };
                 Update: {
                     id?: string;
-                    monthly_due_id?: string | null;
+                    monthly_due_id?: string;
                     due_date?: string;
                     is_paid?: boolean | null;
                     paid_on?: string | null;
@@ -117,4 +90,4 @@ export type Database = {
             };
         };
     };
-};
+}
