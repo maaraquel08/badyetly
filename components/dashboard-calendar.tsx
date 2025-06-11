@@ -55,12 +55,10 @@ export function DashboardCalendar({
         calendarDays.push(day);
     }
 
-    // Generate 3-day view for mobile
-    const mobileDays = [
-        mobileStartDate,
-        addDays(mobileStartDate, 1),
-        addDays(mobileStartDate, 2),
-    ];
+    // Generate 7-day scrollable view for mobile
+    const mobileDays = Array.from({ length: 7 }, (_, i) =>
+        addDays(mobileStartDate, i)
+    );
 
     const navigateMonth = (direction: "prev" | "next") => {
         setCurrentDate((prev) => {
@@ -77,9 +75,9 @@ export function DashboardCalendar({
     const navigateMobileDays = (direction: "prev" | "next") => {
         setMobileStartDate((prev) => {
             if (direction === "prev") {
-                return addDays(prev, -3);
+                return addDays(prev, -7);
             } else {
-                return addDays(prev, 3);
+                return addDays(prev, 7);
             }
         });
     };
@@ -401,7 +399,7 @@ export function DashboardCalendar({
                 </Button>
                 <div className="text-sm font-medium">
                     {format(mobileStartDate, "MMM d")} -{" "}
-                    {format(addDays(mobileStartDate, 2), "MMM d, yyyy")}
+                    {format(addDays(mobileStartDate, 6), "MMM d, yyyy")}
                 </div>
                 <Button
                     variant="outline"
@@ -412,8 +410,8 @@ export function DashboardCalendar({
                 </Button>
             </div>
 
-            {/* 3-column grid for mobile */}
-            <div className="grid grid-cols-3 gap-2">
+            {/* Horizontal scrollable view for mobile */}
+            <div className="flex gap-2 overflow-x-auto py-2 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                 {mobileDays.map((date, index) => {
                     const dues = getDuesForDate(date);
                     const dayStatus = getDayStatus(date);
@@ -424,7 +422,7 @@ export function DashboardCalendar({
                         <div
                             key={index}
                             className={cn(
-                                "min-h-[200px] max-h-[300px] p-2 border border-gray-200 rounded-lg transition-colors hover:bg-gray-50 cursor-pointer",
+                                "min-w-[140px] max-w-[140px] min-h-[200px] max-h-[300px] p-2 border border-gray-200 rounded-lg transition-colors hover:bg-gray-50 cursor-pointer snap-start flex-shrink-0",
                                 isToday && "ring-2 ring-black",
                                 dayStatus === "overdue" &&
                                     "bg-red-100 border-red-300",
@@ -677,7 +675,7 @@ export function DashboardCalendar({
                                           mobileStartDate,
                                           "MMM d"
                                       )} - ${format(
-                                          addDays(mobileStartDate, 2),
+                                          addDays(mobileStartDate, 6),
                                           "d"
                                       )}`}
                             </span>

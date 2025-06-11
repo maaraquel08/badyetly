@@ -11,7 +11,7 @@ export default async function DashboardLayout({
         <AuthGuard requireAuth={true}>
             <div className="min-h-screen">
                 <Sidebar />
-                <main className="md:ml-64 min-h-screen overflow-y-auto">
+                <main className="md:ml-64 min-h-screen overflow-y-auto pt-16 md:pt-0">
                     <div className="p-4 md:p-6">{children}</div>
                 </main>
             </div>
