@@ -302,16 +302,16 @@ export function DashboardCalendar({
                         <div
                             key={`day-${day}`}
                             className={cn(
-                                "min-h-[120px] max-h-[200px] p-1 border rounded-lg transition-colors hover:bg-muted/50 hover:border-primary/50 cursor-pointer",
-                                isToday && "ring-2 ring-primary",
+                                "min-h-[120px] max-h-[200px] p-1 border border-gray-200 rounded-lg transition-colors hover:bg-gray-50 cursor-pointer",
+                                isToday && "ring-2 ring-black",
                                 dayStatus === "overdue" &&
-                                    "bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800 hover:border-red-300 dark:hover:border-red-700",
+                                    "bg-red-100 border-red-300",
                                 dayStatus === "due-today" &&
-                                    "bg-amber-50 border-amber-200 dark:bg-amber-950 dark:border-amber-800 hover:border-amber-300 dark:hover:border-amber-700",
+                                    "bg-yellow-100 border-yellow-300",
                                 dayStatus === "upcoming" &&
-                                    "bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700",
+                                    "bg-blue-100 border-blue-300",
                                 dayStatus === "paid" &&
-                                    "bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700"
+                                    "bg-green-100 border-green-300"
                             )}
                             title="Click to add a new due for this date"
                             onClick={() => handleCellClick(day)}
@@ -320,7 +320,7 @@ export function DashboardCalendar({
                                 <div
                                     className={cn(
                                         "text-sm font-medium mb-1 flex-shrink-0",
-                                        isToday && "text-primary font-bold"
+                                        isToday && "text-black font-bold"
                                     )}
                                 >
                                     {day}
@@ -332,7 +332,7 @@ export function DashboardCalendar({
                                             <div
                                                 key={due.id}
                                                 className={cn(
-                                                    "text-xs p-1 rounded border flex items-center justify-between group cursor-pointer transition-colors bg-white dark:bg-gray-900 shadow-sm hover:shadow-md",
+                                                    "text-xs p-1 rounded border flex items-center justify-between group cursor-pointer transition-colors bg-white shadow-sm hover:shadow-md",
                                                     due.is_paid &&
                                                         "opacity-60 line-through"
                                                 )}
@@ -341,12 +341,12 @@ export function DashboardCalendar({
                                                 }
                                             >
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="truncate font-medium text-gray-900 dark:text-gray-100">
+                                                    <div className="truncate font-medium text-gray-900">
                                                         {due.monthly_dues
                                                             ?.title ||
                                                             "Unknown"}
                                                     </div>
-                                                    <div className="truncate text-gray-600 dark:text-gray-400">
+                                                    <div className="truncate text-gray-600">
                                                         {formatCurrency(
                                                             due.monthly_dues
                                                                 ?.amount || 0
@@ -424,16 +424,16 @@ export function DashboardCalendar({
                         <div
                             key={index}
                             className={cn(
-                                "min-h-[200px] max-h-[300px] p-2 border rounded-lg transition-colors hover:bg-muted/50 hover:border-primary/50 cursor-pointer",
-                                isToday && "ring-2 ring-primary",
+                                "min-h-[200px] max-h-[300px] p-2 border border-gray-200 rounded-lg transition-colors hover:bg-gray-50 cursor-pointer",
+                                isToday && "ring-2 ring-black",
                                 dayStatus === "overdue" &&
-                                    "bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800 hover:border-red-300 dark:hover:border-red-700",
+                                    "bg-red-100 border-red-300",
                                 dayStatus === "due-today" &&
-                                    "bg-amber-50 border-amber-200 dark:bg-amber-950 dark:border-amber-800 hover:border-amber-300 dark:hover:border-amber-700",
+                                    "bg-yellow-100 border-yellow-300",
                                 dayStatus === "upcoming" &&
-                                    "bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700",
+                                    "bg-blue-100 border-blue-300",
                                 dayStatus === "paid" &&
-                                    "bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700"
+                                    "bg-green-100 border-green-300"
                             )}
                             title="Click to add a new due for this date"
                             onClick={() => handleCellClick(date)}
@@ -444,7 +444,7 @@ export function DashboardCalendar({
                                     <div
                                         className={cn(
                                             "text-lg font-bold",
-                                            isToday && "text-primary"
+                                            isToday && "text-black"
                                         )}
                                     >
                                         {dayNumber}
@@ -466,7 +466,7 @@ export function DashboardCalendar({
                                                 <div
                                                     key={due.id}
                                                     className={cn(
-                                                        "text-xs p-2 rounded border cursor-pointer transition-colors bg-white dark:bg-gray-900 shadow-sm hover:shadow-md",
+                                                        "text-xs p-2 rounded border cursor-pointer transition-colors bg-white shadow-sm hover:shadow-md",
                                                         due.is_paid &&
                                                             "opacity-60"
                                                     )}
@@ -477,7 +477,7 @@ export function DashboardCalendar({
                                                     <div className="space-y-1">
                                                         <div
                                                             className={cn(
-                                                                "font-medium text-gray-900 dark:text-gray-100",
+                                                                "font-medium text-gray-900",
                                                                 due.is_paid &&
                                                                     "line-through"
                                                             )}
@@ -486,7 +486,7 @@ export function DashboardCalendar({
                                                                 ?.title ||
                                                                 "Unknown"}
                                                         </div>
-                                                        <div className="text-gray-600 dark:text-gray-400">
+                                                        <div className="text-gray-600">
                                                             {formatCurrency(
                                                                 due.monthly_dues
                                                                     ?.amount ||
@@ -786,23 +786,23 @@ export function DashboardCalendar({
                             window.innerWidth >= 768)) && (
                         <div className="mt-4 md:mt-6 flex flex-wrap gap-2 md:gap-4 text-xs md:text-sm">
                             <div className="flex items-center gap-1 md:gap-2">
-                                <div className="w-3 h-3 md:w-4 md:h-4 border rounded ring-1 md:ring-2 ring-primary"></div>
+                                <div className="w-3 h-3 md:w-4 md:h-4 border border-gray-200 rounded ring-1 md:ring-2 ring-black"></div>
                                 <span>Today</span>
                             </div>
                             <div className="flex items-center gap-1 md:gap-2">
-                                <div className="w-3 h-3 md:w-4 md:h-4 bg-red-100 border border-red-200 rounded dark:bg-red-950 dark:border-red-800"></div>
+                                <div className="w-3 h-3 md:w-4 md:h-4 bg-red-100 border border-red-300 rounded"></div>
                                 <span>Overdue</span>
                             </div>
                             <div className="flex items-center gap-1 md:gap-2">
-                                <div className="w-3 h-3 md:w-4 md:h-4 bg-amber-100 border border-amber-200 rounded dark:bg-amber-950 dark:border-amber-800"></div>
+                                <div className="w-3 h-3 md:w-4 md:h-4 bg-yellow-100 border border-yellow-300 rounded"></div>
                                 <span>Due Today</span>
                             </div>
                             <div className="flex items-center gap-1 md:gap-2">
-                                <div className="w-3 h-3 md:w-4 md:h-4 bg-blue-100 border border-blue-200 rounded dark:bg-blue-950 dark:border-blue-800"></div>
+                                <div className="w-3 h-3 md:w-4 md:h-4 bg-blue-100 border border-blue-300 rounded"></div>
                                 <span>Upcoming</span>
                             </div>
                             <div className="flex items-center gap-1 md:gap-2">
-                                <div className="w-3 h-3 md:w-4 md:h-4 bg-green-50 border border-green-200 rounded dark:bg-green-950 dark:border-green-800"></div>
+                                <div className="w-3 h-3 md:w-4 md:h-4 bg-green-100 border border-green-300 rounded"></div>
                                 <span>Paid</span>
                             </div>
                         </div>

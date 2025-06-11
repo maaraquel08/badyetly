@@ -525,7 +525,16 @@ export function DueForm({
 
                         <div className="space-y-3">
                             {/* Never End */}
-                            <div className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                            <div
+                                className={`relative rounded-xl border-2 p-4 cursor-pointer transition-all duration-200 ${
+                                    formData.end_type === "never"
+                                        ? "border-black bg-gray-50"
+                                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                }`}
+                                onClick={() =>
+                                    handleSelectChange("end_type", "never")
+                                }
+                            >
                                 <input
                                     type="radio"
                                     id="end_never"
@@ -533,23 +542,52 @@ export function DueForm({
                                     value="never"
                                     checked={formData.end_type === "never"}
                                     onChange={handleChange}
-                                    className="h-4 w-4"
+                                    className="sr-only"
                                 />
-                                <div className="flex-1">
-                                    <Label
-                                        htmlFor="end_never"
-                                        className="font-normal cursor-pointer"
+                                <div className="flex items-start space-x-3">
+                                    <div
+                                        className={`flex items-center justify-center w-6 h-6 rounded-full border-2 mt-0.5 ${
+                                            formData.end_type === "never"
+                                                ? "border-black bg-black"
+                                                : "border-gray-300"
+                                        }`}
                                     >
-                                        Never (ongoing bill)
-                                    </Label>
-                                    <p className="text-xs text-muted-foreground">
-                                        This bill will continue indefinitely
-                                    </p>
+                                        {formData.end_type === "never" && (
+                                            <svg
+                                                className="w-3 h-3 text-white"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                        )}
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-medium text-gray-900">
+                                            Never (ongoing bill)
+                                        </h3>
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            This bill will continue indefinitely
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
                             {/* End on Date */}
-                            <div className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                            <div
+                                className={`relative rounded-xl border-2 p-4 cursor-pointer transition-all duration-200 ${
+                                    formData.end_type === "after_date"
+                                        ? "border-black bg-gray-50"
+                                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                }`}
+                                onClick={() =>
+                                    handleSelectChange("end_type", "after_date")
+                                }
+                            >
                                 <input
                                     type="radio"
                                     id="end_after_date"
@@ -557,30 +595,75 @@ export function DueForm({
                                     value="after_date"
                                     checked={formData.end_type === "after_date"}
                                     onChange={handleChange}
-                                    className="h-4 w-4"
+                                    className="sr-only"
                                 />
-                                <div className="flex-1 space-y-2">
-                                    <Label
-                                        htmlFor="end_after_date"
-                                        className="font-normal cursor-pointer"
-                                    >
-                                        End on a specific date
-                                    </Label>
+                                <div className="space-y-3">
+                                    <div className="flex items-start space-x-3">
+                                        <div
+                                            className={`flex items-center justify-center w-6 h-6 rounded-full border-2 mt-0.5 ${
+                                                formData.end_type ===
+                                                "after_date"
+                                                    ? "border-black bg-black"
+                                                    : "border-gray-300"
+                                            }`}
+                                        >
+                                            {formData.end_type ===
+                                                "after_date" && (
+                                                <svg
+                                                    className="w-3 h-3 text-white"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-medium text-gray-900">
+                                                End on a specific date
+                                            </h3>
+                                            <p className="text-sm text-gray-500 mt-1">
+                                                Choose when this bill should
+                                                stop
+                                            </p>
+                                        </div>
+                                    </div>
                                     {formData.end_type === "after_date" && (
-                                        <Input
-                                            id="end_date"
-                                            name="end_date"
-                                            type="date"
-                                            value={formData.end_date}
-                                            onChange={handleChange}
-                                            className="w-full max-w-[200px] animate-in slide-in-from-top-2 duration-200"
-                                        />
+                                        <div
+                                            className="ml-9 animate-in slide-in-from-top-2 duration-200"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <Input
+                                                id="end_date"
+                                                name="end_date"
+                                                type="date"
+                                                value={formData.end_date}
+                                                onChange={handleChange}
+                                                className="w-full max-w-[200px] border-gray-300 focus:border-black focus:ring-black"
+                                            />
+                                        </div>
                                     )}
                                 </div>
                             </div>
 
                             {/* End after Occurrences */}
-                            <div className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                            <div
+                                className={`relative rounded-xl border-2 p-4 cursor-pointer transition-all duration-200 ${
+                                    formData.end_type === "after_occurrences"
+                                        ? "border-black bg-gray-50"
+                                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                }`}
+                                onClick={() =>
+                                    handleSelectChange(
+                                        "end_type",
+                                        "after_occurrences"
+                                    )
+                                }
+                            >
                                 <input
                                     type="radio"
                                     id="end_after_occurrences"
@@ -591,34 +674,67 @@ export function DueForm({
                                         "after_occurrences"
                                     }
                                     onChange={handleChange}
-                                    className="h-4 w-4"
+                                    className="sr-only"
                                 />
-                                <div className="flex-1 space-y-2">
-                                    <Label
-                                        htmlFor="end_after_occurrences"
-                                        className="font-normal cursor-pointer"
-                                    >
-                                        End after a number of payments
-                                    </Label>
+                                <div className="space-y-3">
+                                    <div className="flex items-start space-x-3">
+                                        <div
+                                            className={`flex items-center justify-center w-6 h-6 rounded-full border-2 mt-0.5 ${
+                                                formData.end_type ===
+                                                "after_occurrences"
+                                                    ? "border-black bg-black"
+                                                    : "border-gray-300"
+                                            }`}
+                                        >
+                                            {formData.end_type ===
+                                                "after_occurrences" && (
+                                                <svg
+                                                    className="w-3 h-3 text-white"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-medium text-gray-900">
+                                                End after a number of payments
+                                            </h3>
+                                            <p className="text-sm text-gray-500 mt-1">
+                                                Set a specific number of
+                                                payments
+                                            </p>
+                                        </div>
+                                    </div>
                                     {formData.end_type ===
                                         "after_occurrences" && (
-                                        <div className="flex items-center space-x-2 animate-in slide-in-from-top-2 duration-200">
-                                            <span className="text-sm text-muted-foreground">
-                                                After
-                                            </span>
-                                            <Input
-                                                id="occurrences"
-                                                name="occurrences"
-                                                type="number"
-                                                min="1"
-                                                max="999"
-                                                value={formData.occurrences}
-                                                onChange={handleChange}
-                                                className="w-20"
-                                            />
-                                            <span className="text-sm text-muted-foreground">
-                                                payments
-                                            </span>
+                                        <div
+                                            className="ml-9 animate-in slide-in-from-top-2 duration-200"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <div className="flex items-center space-x-2">
+                                                <span className="text-sm text-gray-600">
+                                                    After
+                                                </span>
+                                                <Input
+                                                    id="occurrences"
+                                                    name="occurrences"
+                                                    type="number"
+                                                    min="1"
+                                                    max="999"
+                                                    value={formData.occurrences}
+                                                    onChange={handleChange}
+                                                    className="w-20 border-gray-300 focus:border-black focus:ring-black"
+                                                />
+                                                <span className="text-sm text-gray-600">
+                                                    payments
+                                                </span>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

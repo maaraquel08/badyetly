@@ -43,11 +43,11 @@ export function DuesList({
     const getCardVariant = () => {
         switch (variant) {
             case "warning":
-                return "border-amber-200 dark:border-amber-800";
+                return "bg-white border-amber-200";
             case "destructive":
-                return "border-red-200 dark:border-red-800";
+                return "bg-white border-red-200";
             default:
-                return "";
+                return "bg-white border-gray-200";
         }
     };
 
@@ -66,15 +66,15 @@ export function DuesList({
     const getStatusColor = (status: string) => {
         switch (status) {
             case "paid":
-                return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+                return "bg-green-100 text-green-800 border-green-300";
             case "overdue":
-                return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+                return "bg-red-100 text-red-800 border-red-300";
             case "due-today":
-                return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300";
+                return "bg-yellow-100 text-yellow-800 border-yellow-300";
             case "upcoming":
-                return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+                return "bg-blue-100 text-blue-800 border-blue-300";
             default:
-                return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+                return "bg-gray-100 text-gray-800 border-gray-300";
         }
     };
 
