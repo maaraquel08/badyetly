@@ -11,9 +11,11 @@ export default async function DashboardLayout({
   return (
     <AuthGuard requireAuth={true}>
       <SupabaseProvider>
-        <div className="flex min-h-screen">
+        <div className="min-h-screen">
           <Sidebar />
-          <main className="flex-1 p-4 md:p-6">{children}</main>
+          <main className="md:ml-64 min-h-screen overflow-y-auto">
+            <div className="p-4 md:p-6">{children}</div>
+          </main>
         </div>
       </SupabaseProvider>
     </AuthGuard>

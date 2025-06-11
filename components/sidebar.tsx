@@ -65,10 +65,10 @@ export function Sidebar() {
   }
 
   return (
-    <div className="hidden border-r bg-muted/40 md:block md:w-64">
+    <div className="fixed left-0 top-0 z-50 h-screen w-64 border-r bg-muted/40 hidden md:block">
       <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="flex h-16 items-center border-b px-4">
+        <div className="flex h-16 items-center border-b px-4 flex-shrink-0">
           <Link href="/dashboard" className="flex items-center space-x-2">
             <CalendarIcon className="h-6 w-6" />
             <span className="font-bold">Monthly Dues</span>
@@ -76,7 +76,7 @@ export function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 space-y-1 p-4">
+        <div className="flex-1 space-y-1 p-4 overflow-y-auto">
           <nav className="grid gap-1">
             {routes.map((route) => (
               <Button
@@ -95,7 +95,7 @@ export function Sidebar() {
         </div>
 
         {/* User section */}
-        <div className="border-t p-4">
+        <div className="border-t p-4 flex-shrink-0">
           <div className="flex items-center space-x-3 mb-3">
             <Avatar className="h-8 w-8">
               <AvatarFallback>{user ? getUserInitials(user.user_metadata?.name, user.email!) : "U"}</AvatarFallback>

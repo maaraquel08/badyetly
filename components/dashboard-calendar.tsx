@@ -149,6 +149,43 @@ export function DashboardCalendar({ dueInstances, onRefresh }: DashboardCalendar
     }
   }
 
+  const handleMarkAsUnpaid = async (dueId: string, event: React.MouseEvent) => {
+    event.stopPropagation()
+    setProcessing((prev) => ({ ...prev, [dueId]: true }))
+
+    try {
+      const { error } = await supabase
+        .from("due_instances")
+        .update({
+          is_paid: false,
+          paid_on: null,
+        })
+        .eq("id", dueId)
+
+      if (error) {
+        throw error
+      }
+
+      toast({
+        title: "Marked as unpaid",
+        description: "The payment has been marked as unpaid.",
+      })
+
+      if (onRefresh) {
+        onRefresh()
+      }
+    } catch (error) {
+      console.error("Error marking as unpaid:", error)
+      toast({
+        title: "Error",
+        description: "Failed to mark payment as unpaid. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setProcessing((prev) => ({ ...prev, [dueId]: false }))
+    }
+  }
+
   const handleBillClick = (due: any, event: React.MouseEvent) => {
     event.stopPropagation()
     setSelectedBill(due)
@@ -580,6 +617,7 @@ export function DashboardCalendar({ dueInstances, onRefresh }: DashboardCalendar
         isOpen={isSheetOpen}
         onClose={() => setIsSheetOpen(false)}
         onMarkAsPaid={handleMarkAsPaid}
+        onMarkAsUnpaid={handleMarkAsUnpaid}
         currency={currency}
         processing={processing}
       />

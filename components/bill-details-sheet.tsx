@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Check, Calendar, CreditCard, Tag, FileText, Clock } from "lucide-react"
+import { Check, Calendar, CreditCard, Tag, FileText, Clock, X } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import { format } from "date-fns"
 
@@ -15,11 +15,20 @@ interface BillDetailsSheetProps {
   isOpen: boolean
   onClose: () => void
   onMarkAsPaid: (dueId: string, event: React.MouseEvent) => void
+  onMarkAsUnpaid?: (dueId: string, event: React.MouseEvent) => void
   currency: string
   processing: Record<string, boolean>
 }
 
-export function BillDetailsSheet({ bill, isOpen, onClose, onMarkAsPaid, currency, processing }: BillDetailsSheetProps) {
+export function BillDetailsSheet({
+  bill,
+  isOpen,
+  onClose,
+  onMarkAsPaid,
+  onMarkAsUnpaid,
+  currency,
+  processing,
+}: BillDetailsSheetProps) {
   if (!bill) return null
 
   const getCategoryColor = (category: string) => {
@@ -194,7 +203,7 @@ export function BillDetailsSheet({ bill, isOpen, onClose, onMarkAsPaid, currency
 
           {/* Action Buttons */}
           <div className="space-y-3 pt-4">
-            {!bill.is_paid && (
+            {!bill.is_paid ? (
               <Button className="w-full" onClick={(e) => onMarkAsPaid(bill.id, e)} disabled={processing[bill.id]}>
                 {processing[bill.id] ? (
                   "Marking as Paid..."
@@ -202,6 +211,22 @@ export function BillDetailsSheet({ bill, isOpen, onClose, onMarkAsPaid, currency
                   <>
                     <Check className="mr-2 h-4 w-4" />
                     Mark as Paid
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={(e) => onMarkAsUnpaid && onMarkAsUnpaid(bill.id, e)}
+                disabled={processing[bill.id]}
+              >
+                {processing[bill.id] ? (
+                  "Marking as Unpaid..."
+                ) : (
+                  <>
+                    <X className="mr-2 h-4 w-4" />
+                    Mark as Unpaid
                   </>
                 )}
               </Button>
