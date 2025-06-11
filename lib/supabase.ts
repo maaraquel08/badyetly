@@ -2,18 +2,17 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
 // Use the environment variables that are available in the project
 export const createClient = () => {
-  // Check if we're in the browser
-  if (typeof window !== "undefined") {
-    return createClientComponentClient({
-      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    })
-  }
-
-  // Fallback for server-side
   return createClientComponentClient({
-    supabaseUrl: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
-    supabaseKey: process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    options: {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce",
+      },
+    },
   })
 }
 
@@ -53,6 +52,9 @@ export type Database = {
           status: string
           notes: string | null
           created_at: string
+          end_date: string | null
+          end_after_occurrences: number | null
+          custom_frequency: number | null
         }
         Insert: {
           id?: string
@@ -66,6 +68,9 @@ export type Database = {
           status?: string
           notes?: string | null
           created_at?: string
+          end_date?: string | null
+          end_after_occurrences?: number | null
+          custom_frequency?: number | null
         }
         Update: {
           id?: string
@@ -79,6 +84,9 @@ export type Database = {
           status?: string
           notes?: string | null
           created_at?: string
+          end_date?: string | null
+          end_after_occurrences?: number | null
+          custom_frequency?: number | null
         }
       }
       due_instances: {

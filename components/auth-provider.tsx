@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase"
 import type { User } from "@supabase/supabase-js"
@@ -26,8 +26,11 @@ export default function AuthProvider({
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
+  const initialized = useRef(false)
 
   useEffect(() => {
+    let mounted = true
+
     // Get initial session
     const getInitialSession = async () => {
       try {
@@ -41,46 +44,114 @@ export default function AuthProvider({
           console.error("Error getting session:", error)
         }
 
-        setUser(session?.user ?? null)
-        console.log("Session user:", session?.user ? "Authenticated" : "Not authenticated")
+        if (mounted) {
+          setUser(session?.user ?? null)
+          console.log("Session user:", session?.user ? "Authenticated" : "Not authenticated")
+          setLoading(false)
+          initialized.current = true
+        }
       } catch (error) {
         console.error("Unexpected error getting session:", error)
-      } finally {
-        setLoading(false)
+        if (mounted) {
+          setLoading(false)
+        }
       }
     }
 
-    getInitialSession()
+    // Only get initial session if not already initialized
+    if (!initialized.current) {
+      getInitialSession()
+    }
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event)
-      setUser(session?.user ?? null)
-      setLoading(false)
+      console.log("Auth state changed:", event, session?.user ? "User present" : "No user")
 
-      if (event === "SIGNED_IN") {
+      if (mounted) {
+        setUser(session?.user ?? null)
+        setLoading(false)
+      }
+
+      if (event === "SIGNED_IN" && session?.user) {
         // Create user profile if it doesn't exist
-        if (session?.user) {
-          try {
-            const { error } = await supabase.from("users").upsert({
-              id: session.user.id,
-              email: session.user.email!,
-              name: session.user.user_metadata?.name || null,
-            })
+        try {
+          const { error } = await supabase.from("users").upsert({
+            id: session.user.id,
+            email: session.user.email!,
+            name: session.user.user_metadata?.name || null,
+          })
 
-            if (error) {
-              console.error("Error creating user profile:", error)
-            }
-          } catch (error) {
-            console.error("Unexpected error creating user profile:", error)
+          if (error) {
+            console.error("Error creating user profile:", error)
           }
+        } catch (error) {
+          console.error("Unexpected error creating user profile:", error)
         }
       }
     })
 
-    return () => subscription.unsubscribe()
+    // Handle page visibility changes to refresh session
+    const handleVisibilityChange = async () => {
+      if (!document.hidden && initialized.current) {
+        console.log("Page became visible, refreshing session...")
+        try {
+          const {
+            data: { session },
+            error,
+          } = await supabase.auth.getSession()
+
+          if (error) {
+            console.error("Error refreshing session:", error)
+          }
+
+          if (mounted) {
+            setUser(session?.user ?? null)
+            console.log("Session refreshed:", session?.user ? "Authenticated" : "Not authenticated")
+          }
+        } catch (error) {
+          console.error("Error refreshing session on visibility change:", error)
+        }
+      }
+    }
+
+    // Handle storage changes (for cross-tab session sync)
+    const handleStorageChange = async (e: StorageEvent) => {
+      if (e.key === "supabase.auth.token" && initialized.current) {
+        console.log("Auth token changed in another tab, refreshing session...")
+        try {
+          const {
+            data: { session },
+            error,
+          } = await supabase.auth.getSession()
+
+          if (error) {
+            console.error("Error refreshing session from storage change:", error)
+          }
+
+          if (mounted) {
+            setUser(session?.user ?? null)
+            console.log("Session synced from storage:", session?.user ? "Authenticated" : "Not authenticated")
+          }
+        } catch (error) {
+          console.error("Error refreshing session on storage change:", error)
+        }
+      }
+    }
+
+    // Add event listeners
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    window.addEventListener("storage", handleStorageChange)
+    window.addEventListener("focus", handleVisibilityChange)
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+      window.removeEventListener("storage", handleStorageChange)
+      window.removeEventListener("focus", handleVisibilityChange)
+    }
   }, [supabase])
 
   const signIn = async (email: string, password: string) => {
@@ -117,6 +188,7 @@ export default function AuthProvider({
   const signOut = async () => {
     try {
       await supabase.auth.signOut()
+      setUser(null)
       router.push("/")
     } catch (error) {
       console.error("Sign out error:", error)
