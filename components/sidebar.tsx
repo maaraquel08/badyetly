@@ -12,6 +12,7 @@ import {
     LogOut,
     Menu,
     X,
+    MessageSquare,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -69,6 +70,12 @@ export function Sidebar() {
             href: "/dashboard/settings",
             icon: Settings,
             label: "Settings",
+        },
+        {
+            href: "https://forms.gle/hKDraWvYXY6bWcbN8",
+            icon: MessageSquare,
+            label: "Feedback",
+            external: true,
         },
     ];
 
@@ -178,13 +185,25 @@ export function Sidebar() {
                             )}
                             asChild
                         >
-                            <Link
-                                href={route.href}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                                <route.icon className="mr-2 h-4 w-4" />
-                                {route.label}
-                            </Link>
+                            {route.external ? (
+                                <a
+                                    href={route.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    <route.icon className="mr-2 h-4 w-4" />
+                                    {route.label}
+                                </a>
+                            ) : (
+                                <Link
+                                    href={route.href}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    <route.icon className="mr-2 h-4 w-4" />
+                                    {route.label}
+                                </Link>
+                            )}
                         </Button>
                     ))}
                 </nav>

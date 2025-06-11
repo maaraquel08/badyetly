@@ -580,11 +580,9 @@ export function DashboardCalendar({
                         <div
                             key={due.id}
                             className={cn(
-                                "p-3 rounded-lg border bg-white dark:bg-gray-900 cursor-pointer transition-colors hover:bg-muted/50",
-                                isOverdue &&
-                                    "border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800",
-                                isDueToday &&
-                                    "border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800",
+                                "p-3 rounded-lg border bg-white cursor-pointer transition-colors hover:bg-gray-50",
+                                isOverdue && "border-red-200 bg-red-50",
+                                isDueToday && "border-amber-200 bg-amber-50",
                                 due.is_paid && "opacity-60"
                             )}
                             onClick={(e) => handleBillClick(due, e)}
