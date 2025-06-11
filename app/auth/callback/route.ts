@@ -50,22 +50,11 @@ export async function GET(request: Request) {
                 await supabase.auth.exchangeCodeForSession(code);
 
             if (exchangeError) {
-                console.error("OAuth exchange error:", exchangeError);
                 return NextResponse.redirect(
                     `${origin}/login?error=exchange_failed&message=${encodeURIComponent(
                         exchangeError.message
                     )}`
                 );
-            }
-
-            // Debug: Log the user data we received from OAuth
-            if (data.user) {
-                console.log("OAuth success - User data:", {
-                    id: data.user.id,
-                    email: data.user.email,
-                    metadata: data.user.user_metadata,
-                    app_metadata: data.user.app_metadata,
-                });
             }
 
             // Successful authentication, redirect to the intended page
