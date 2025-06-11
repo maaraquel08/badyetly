@@ -10,8 +10,8 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Monthly Dues Tracker",
-  description: "Track and manage your recurring monthly payments",
-    generator: 'v0.dev'
+  description: "Track and manage your recurring monthly payments with ease",
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
@@ -21,7 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
+      <body className={`${inter.className} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>{children}</AuthProvider>
           <Toaster />
