@@ -6,7 +6,7 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-background to-muted/30">
       <header className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
-        <div className="w-full px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2 font-semibold">
             <CalendarCheck className="h-6 w-6 text-primary" />
             <span className="text-xl">Monthly Dues</span>
@@ -27,7 +27,7 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="py-20 md:py-28">
-          <div className="container px-4 md:px-6">
+          <div className="max-w-7xl mx-auto px-6">
             <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
               <div className="space-y-6">
                 <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm text-primary mb-2">
@@ -53,7 +53,7 @@ export default function LandingPage() {
                   </Link>
                 </div>
 
-                <div className="flex items-center gap-8 pt-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 pt-4">
                   {["Free to start", "No credit card required", "Cancel anytime"].map((item, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-primary" />
@@ -143,8 +143,8 @@ export default function LandingPage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-20 bg-muted/50">
-          <div className="container px-4 md:px-6">
+        <section className="w-full py-20 bg-muted/50">
+          <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
                 Simple Features, <span className="text-primary">Powerful Results</span>
@@ -154,7 +154,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
+            <div className="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
               {[
                 {
                   icon: <CalendarCheck className="h-6 w-6" />,
@@ -189,7 +189,7 @@ export default function LandingPage() {
 
         {/* CTA Section */}
         <section className="py-20">
-          <div className="container px-4 md:px-6">
+          <div className="max-w-7xl mx-auto px-6">
             <div className="rounded-2xl bg-primary/5 p-8 md:p-12 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/5 z-0"></div>
               <div className="relative z-10 max-w-2xl mx-auto text-center">
@@ -210,8 +210,8 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="w-full border-t py-6 bg-background">
-        <div className="w-full px-6 flex flex-col items-center justify-between gap-4 md:flex-row">
+      <footer className="w-full border-t py-8 bg-background">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex items-center gap-2 font-semibold">
             <CalendarCheck className="h-5 w-5 text-primary" />
             <span>Monthly Dues</span>
