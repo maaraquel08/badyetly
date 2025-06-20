@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { DueForm } from "@/components/due-form";
+import { DueForm } from "@/components/due-form/due-form";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {

@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { DashboardHeader } from "@/components/dashboard-header";
-import { DueForm } from "@/components/due-form";
+import { DueFormHeader } from "@/components/due-form/due-form-header";
+import { DueForm } from "@/components/due-form/due-form";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/lib/supabase";
 import { useAuth } from "@/components/auth-provider";
+import { ArrowLeft } from "lucide-react";
 
 export default function NewDuePage() {
     const { toast } = useToast();
@@ -165,10 +167,20 @@ export default function NewDuePage() {
 
     return (
         <div className="space-y-6">
-            <DashboardHeader
+            <DueFormHeader
                 heading="Add Due"
                 text="Create a new recurring monthly payment."
-            />
+            >
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => router.back()}
+                    className="flex-shrink-0"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                </Button>
+            </DueFormHeader>
 
             <DueForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
         </div>

@@ -9,9 +9,14 @@ import { AuthProvider } from "@/components/auth-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Monthly Dues Tracker",
+    title: "Badyetly",
     description: "Track and manage your recurring monthly payments with ease",
     generator: "v0.dev",
+    icons: {
+        icon: "/logo.svg",
+        shortcut: "/logo.svg",
+        apple: "/logo.svg",
+    },
 };
 
 export default function RootLayout({
@@ -22,7 +27,8 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
-                <link rel="icon" href="/favicon.ico" sizes="any" />
+                <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+                <link rel="apple-touch-icon" href="/logo.svg" />
             </head>
             <body className={`${inter.className} antialiased`}>
                 <ThemeProvider

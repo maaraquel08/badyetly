@@ -137,8 +137,6 @@ export default function DashboardPage() {
                 </Link>
             </DashboardHeader>
 
-            <AnalyticsCards dueInstances={dueInstances} />
-
             <DashboardCalendar
                 dueInstances={dueInstances}
                 onRefresh={fetchDueInstances}

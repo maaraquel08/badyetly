@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Calendar, DollarSign, Tag, Repeat } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getCategoryColor } from "@/lib/utils";
 
 interface DuesTableProps {
     dues: any[];
@@ -22,22 +22,6 @@ interface DuesTableProps {
 }
 
 export function DuesTable({ dues, isLoading }: DuesTableProps) {
-    const getCategoryColor = (category: string) => {
-        switch (category?.toLowerCase()) {
-            case "utilities":
-                return "bg-blue-100 text-blue-800";
-            case "loan":
-                return "bg-amber-100 text-amber-800";
-            case "subscription":
-                return "bg-purple-100 text-purple-800";
-            case "phone":
-            case "internet":
-                return "bg-green-100 text-green-800";
-            default:
-                return "bg-gray-100 text-gray-800";
-        }
-    };
-
     const getStatusColor = (status: string) => {
         switch (status?.toLowerCase()) {
             case "active":
