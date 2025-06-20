@@ -185,7 +185,7 @@ export function CalendarCell({
                                         "yyyy-MM-dd"
                                     );
                                     router.push(
-                                        `/dashboard/dues/add?date=${formattedDate}`
+                                        `/dashboard/dues/new?date=${formattedDate}`
                                     );
                                 }}
                             >

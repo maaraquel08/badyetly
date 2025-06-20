@@ -130,7 +130,7 @@ export function MobileCalendarCell({
                             // Format date as YYYY-MM-DD for the query parameter
                             const formattedDate = format(date, "yyyy-MM-dd");
                             router.push(
-                                `/dashboard/dues/add?date=${formattedDate}`
+                                `/dashboard/dues/new?date=${formattedDate}`
                             );
                         }}
                     >
