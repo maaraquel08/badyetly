@@ -8,12 +8,19 @@ import { Badge } from "@/components/ui/badge";
 
 interface AnalyticsCardsProps {
     dueInstances: any[];
+    viewingDate?: Date;
 }
 
-export function AnalyticsCards({ dueInstances }: AnalyticsCardsProps) {
+export function AnalyticsCards({
+    dueInstances,
+    viewingDate,
+}: AnalyticsCardsProps) {
     const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
+
+    // Defensive check - fallback to today if viewingDate is undefined
+    const safeViewingDate = viewingDate || today;
+    const currentMonth = safeViewingDate.getMonth();
+    const currentYear = safeViewingDate.getFullYear();
 
     // Filter dues for current month only
     const currentMonthDues = dueInstances.filter((due) => {
@@ -69,13 +76,26 @@ export function AnalyticsCards({ dueInstances }: AnalyticsCardsProps) {
         (due) => due.is_paid
     ).length;
 
+    // Get month name for display
+    const monthName = safeViewingDate.toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+    });
+
+    // Check if we're viewing current month
+    const isCurrentMonth =
+        currentMonth === today.getMonth() &&
+        currentYear === today.getFullYear();
+
     return (
         <div className="grid gap-3 grid-cols-2 md:grid-cols-4 lg:grid-cols-4">
             {/* Total Monthly Bills - Takes 2 columns on mobile for prominence */}
             <Card className="col-span-2 md:col-span-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-xs md:text-sm font-medium">
-                        Total This Month
+                        {isCurrentMonth
+                            ? "Total This Month"
+                            : `Total for ${monthName}`}
                     </CardTitle>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>

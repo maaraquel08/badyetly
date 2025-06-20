@@ -1,17 +1,15 @@
 import type React from "react";
-interface DashboardHeaderProps {
+
+interface DueFormHeaderProps {
     heading: string;
     text?: string;
     children?: React.ReactNode;
 }
 
-export function DashboardHeader({
-    heading,
-    text,
-    children,
-}: DashboardHeaderProps) {
+export function DueFormHeader({ heading, text, children }: DueFormHeaderProps) {
     return (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+            {children}
             <div className="space-y-1">
                 <h1 className="text-2xl font-semibold tracking-tight">
                     {heading}
@@ -20,7 +18,6 @@ export function DashboardHeader({
                     <p className="text-sm text-muted-foreground">{text}</p>
                 )}
             </div>
-            {children}
         </div>
     );
 }

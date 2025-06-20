@@ -14,10 +14,12 @@ export default function LandingPage() {
             <header className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-2 font-semibold">
-                        <CalendarCheck className="h-6 w-6 text-primary" />
-                        <span className="text-xl uppercase font-bold">
-                            Badyetly
-                        </span>
+                        <img
+                            src="/logo.svg"
+                            alt="Badyetly"
+                            className="h-8 w-8"
+                        />
+                        <span className="text-xl font-bold">Badyetly</span>
                     </div>
                     <div className="flex items-center gap-4">
                         <Link href="/login">
@@ -265,8 +267,12 @@ export default function LandingPage() {
             <footer className="w-full border-t py-8 bg-background">
                 <div className="max-w-7xl mx-auto px-6 flex flex-col items-center justify-between gap-4 md:flex-row">
                     <div className="flex items-center gap-2 font-semibold">
-                        <CalendarCheck className="h-5 w-5 text-primary" />
-                        <span className="uppercase font-bold">Badyetly</span>
+                        <img
+                            src="/logo.svg"
+                            alt="Badyetly"
+                            className="h-6 w-6"
+                        />
+                        <span className="font-bold">Badyetly</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
                         © 2025 Badyetly. All rights reserved.
