@@ -13,6 +13,7 @@ export interface UserProfile {
 
 export interface SidebarContentProps {
     forMobile?: boolean;
+    onMobileMenuClose?: () => void;
 }
 
 export interface NavigationItemProps {

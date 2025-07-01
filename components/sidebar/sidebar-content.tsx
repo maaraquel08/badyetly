@@ -30,7 +30,10 @@ const mcpSpringTransition =
 const mcpBounceTransition =
     "600ms linear(0, 0.0022, 0.0087, 0.0196, 0.0348, 0.0543, 0.0782, 0.1065, 0.139, 0.176, 0.2173, 0.2629, 0.3128, 0.3672, 0.4258, 0.4888, 0.5562, 0.6279, 0.7039, 0.7843, 0.869, 0.9581, 0.9752, 0.9332, 0.8954, 0.8621, 0.833, 0.8083, 0.788, 0.772, 0.7603, 0.753, 0.7501, 0.7515, 0.7572, 0.7673, 0.7817, 0.8004, 0.8235, 0.851, 0.8828, 0.9189, 0.9594, 0.9979, 0.9772, 0.9608, 0.9487, 0.941, 0.9377, 0.9386, 0.944, 0.9537, 0.9677, 0.986, 0.996, 0.9881, 0.9846, 0.9854, 0.9905, 1)";
 
-export function SidebarContent({ forMobile = false }: SidebarContentProps) {
+export function SidebarContent({
+    forMobile = false,
+    onMobileMenuClose,
+}: SidebarContentProps) {
     const pathname = usePathname();
     const { isCompact, toggleSidebar } = useSidebar();
     const { signOut } = useAuth();
@@ -52,9 +55,12 @@ export function SidebarContent({ forMobile = false }: SidebarContentProps) {
         }
     };
 
+    // Handler to close mobile menu if provided, otherwise no-op
+    const handleMobileMenuClose = onMobileMenuClose || (() => {});
+
     return (
         <motion.div
-            className="bg-[#f5f4f4] relative h-full w-full"
+            className="bg-background-subtle relative h-full w-full"
             initial={{ opacity: 0, x: forMobile ? -20 : 0 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: forMobile ? -20 : 0 }}
@@ -69,7 +75,7 @@ export function SidebarContent({ forMobile = false }: SidebarContentProps) {
                 >
                     {/* Logo Item - matches navigation item structure */}
                     <motion.div
-                        className="relative rounded-xl h-[49px] w-full bg-[#f5f4f4]"
+                        className="relative rounded-xl h-[49px] w-full bg-background-subtle"
                         whileHover={{
                             scale: 1.02,
                             transition: { duration: 0.2, ease: "easeOut" },
@@ -84,7 +90,7 @@ export function SidebarContent({ forMobile = false }: SidebarContentProps) {
                         >
                             <Link
                                 href="/dashboard"
-                                onClick={() => {}}
+                                onClick={handleMobileMenuClose}
                                 className="flex items-center justify-start w-full h-full gap-2"
                             >
                                 <motion.div
@@ -177,7 +183,9 @@ export function SidebarContent({ forMobile = false }: SidebarContentProps) {
                                             isActive={isActive}
                                             isCompact={isCompact}
                                             forMobile={forMobile}
-                                            onMobileMenuClose={() => {}}
+                                            onMobileMenuClose={
+                                                handleMobileMenuClose
+                                            }
                                         />
                                     </motion.div>
                                 );
@@ -208,7 +216,7 @@ export function SidebarContent({ forMobile = false }: SidebarContentProps) {
                         whileTap={{ scale: 0.98 }}
                         className="w-full"
                     >
-                        <div className="relative rounded-xl h-[52px] w-full bg-[#f5f4f4]">
+                        <div className="relative rounded-xl h-[52px] w-full bg-background-subtle">
                             <Button
                                 variant="ghost"
                                 className="w-full h-full flex items-center justify-start relative bg-transparent hover:bg-transparent p-4"

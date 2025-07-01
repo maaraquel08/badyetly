@@ -48,7 +48,10 @@ export function MobileHeader({
                         <SheetTitle className="sr-only">
                             Navigation Menu
                         </SheetTitle>
-                        <SidebarContent forMobile={true} />
+                        <SidebarContent
+                            forMobile={true}
+                            onMobileMenuClose={() => onMobileMenuToggle(false)}
+                        />
                     </SheetContent>
                 </Sheet>
             </div>
