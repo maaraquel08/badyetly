@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+
 import {
     Check,
     Calendar,
@@ -94,30 +94,26 @@ export function BillDetailsSheet({
                     </SheetDescription>
                 </SheetHeader>
 
-                <div className="mt-6 space-y-6">
+                <div className="px-6 pb-6 pt-4 border-t border-border space-y-6 flex-1 overflow-y-auto">
                     {/* Amount and Status */}
-                    <div className="space-y-4">
-                        <div className="text-center">
-                            <div className="text-3xl font-bold">
-                                {formatCurrency(bill.monthly_dues.amount || 0)}
-                            </div>
-                            <div className="flex items-center justify-center gap-2 mt-2">
-                                <StatusIcon className="h-4 w-4" />
-                                <Badge
-                                    variant="outline"
-                                    className={statusInfo.color}
-                                >
-                                    {statusInfo.status}
-                                </Badge>
-                            </div>
+                    <div className="rounded-xl p-6 text-center">
+                        <div className="text-3xl font-bold text-foreground mb-3">
+                            {formatCurrency(bill.monthly_dues.amount || 0)}
+                        </div>
+                        <div className="flex items-center justify-center gap-2">
+                            <StatusIcon className="h-4 w-4" />
+                            <Badge
+                                variant="outline"
+                                className={statusInfo.color}
+                            >
+                                {statusInfo.status}
+                            </Badge>
                         </div>
                     </div>
 
-                    <Separator />
-
                     {/* Bill Information */}
-                    <div className="space-y-4">
-                        <h3 className="font-semibold flex items-center gap-2">
+                    <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                        <h3 className="font-semibold flex items-center gap-2 text-foreground">
                             <FileText className="h-4 w-4" />
                             Bill Information
                         </h3>
@@ -165,11 +161,9 @@ export function BillDetailsSheet({
                         </div>
                     </div>
 
-                    <Separator />
-
                     {/* Recurring Information */}
-                    <div className="space-y-4">
-                        <h3 className="font-semibold flex items-center gap-2">
+                    <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                        <h3 className="font-semibold flex items-center gap-2 text-foreground">
                             <Calendar className="h-4 w-4" />
                             Recurring Details
                         </h3>
@@ -235,65 +229,64 @@ export function BillDetailsSheet({
 
                     {/* Notes Section */}
                     {bill.monthly_dues.notes && (
-                        <>
-                            <Separator />
-                            <div className="space-y-2">
-                                <h3 className="font-semibold flex items-center gap-2">
-                                    <Tag className="h-4 w-4" />
-                                    Notes
-                                </h3>
-                                <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                        <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                            <h3 className="font-semibold flex items-center gap-2 text-foreground">
+                                <Tag className="h-4 w-4" />
+                                Notes
+                            </h3>
+                            <div className="bg-muted/50 p-3 rounded-md">
+                                <p className="text-sm text-muted-foreground leading-relaxed">
                                     {bill.monthly_dues.notes}
                                 </p>
                             </div>
-                        </>
+                        </div>
+                    )}
+                </div>
+
+                {/* Action Buttons - Fixed at bottom */}
+                <div className="p-6 pt-4 border-t bg-background space-y-3">
+                    {!bill.is_paid ? (
+                        <Button
+                            className="w-full"
+                            onClick={(e) => onMarkAsPaid(bill.id, e)}
+                            disabled={processing[bill.id]}
+                        >
+                            {processing[bill.id] ? (
+                                "Marking as Paid..."
+                            ) : (
+                                <>
+                                    <Check className="mr-2 h-4 w-4" />
+                                    Mark as Paid
+                                </>
+                            )}
+                        </Button>
+                    ) : (
+                        <Button
+                            className="w-full"
+                            variant="outline"
+                            onClick={(e) =>
+                                onMarkAsUnpaid && onMarkAsUnpaid(bill.id, e)
+                            }
+                            disabled={processing[bill.id]}
+                        >
+                            {processing[bill.id] ? (
+                                "Marking as Unpaid..."
+                            ) : (
+                                <>
+                                    <X className="mr-2 h-4 w-4" />
+                                    Mark as Unpaid
+                                </>
+                            )}
+                        </Button>
                     )}
 
-                    {/* Action Buttons */}
-                    <div className="space-y-3 pt-4">
-                        {!bill.is_paid ? (
-                            <Button
-                                className="w-full"
-                                onClick={(e) => onMarkAsPaid(bill.id, e)}
-                                disabled={processing[bill.id]}
-                            >
-                                {processing[bill.id] ? (
-                                    "Marking as Paid..."
-                                ) : (
-                                    <>
-                                        <Check className="mr-2 h-4 w-4" />
-                                        Mark as Paid
-                                    </>
-                                )}
-                            </Button>
-                        ) : (
-                            <Button
-                                className="w-full"
-                                variant="outline"
-                                onClick={(e) =>
-                                    onMarkAsUnpaid && onMarkAsUnpaid(bill.id, e)
-                                }
-                                disabled={processing[bill.id]}
-                            >
-                                {processing[bill.id] ? (
-                                    "Marking as Unpaid..."
-                                ) : (
-                                    <>
-                                        <X className="mr-2 h-4 w-4" />
-                                        Mark as Unpaid
-                                    </>
-                                )}
-                            </Button>
-                        )}
-
-                        <Button
-                            variant="outline"
-                            className="w-full"
-                            onClick={onClose}
-                        >
-                            Close
-                        </Button>
-                    </div>
+                    <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={onClose}
+                    >
+                        Close
+                    </Button>
                 </div>
             </SheetContent>
         </Sheet>
