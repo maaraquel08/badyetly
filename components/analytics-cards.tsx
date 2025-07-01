@@ -91,7 +91,7 @@ export function AnalyticsCards({
         <div className="grid gap-3 grid-cols-2 md:grid-cols-4 lg:grid-cols-4">
             {/* Total Monthly Bills - Takes 2 columns on mobile for prominence */}
             <Card className="col-span-2 md:col-span-1">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
                     <CardTitle className="text-xs md:text-sm font-medium">
                         {isCurrentMonth
                             ? "Total This Month"
@@ -99,11 +99,11 @@ export function AnalyticsCards({
                     </CardTitle>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
-                <CardContent className="pb-3 md:pb-6">
+                <CardContent className="pb-2 md:pb-3">
                     <div className="text-lg md:text-2xl font-bold">
                         {formatCurrency(analytics.totalMonthlyAmount)}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                         <span className="block md:inline">
                             {formatCurrency(analytics.paidAmount)} paid
                         </span>
@@ -117,23 +117,23 @@ export function AnalyticsCards({
 
             {/* Payment Progress - Compact on mobile */}
             <Card className="col-span-1">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
                     <CardTitle className="text-xs md:text-sm font-medium">
                         Progress
                     </CardTitle>
                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
-                <CardContent className="pb-3 md:pb-6">
+                <CardContent className="pb-2 md:pb-3">
                     <div className="text-lg md:text-2xl font-bold">
                         {paymentRate.toFixed(0)}%
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5 md:h-2 mt-1 md:mt-2">
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 md:h-2 mt-0.5 md:mt-1">
                         <div
                             className="bg-green-600 h-1.5 md:h-2 rounded-full transition-all duration-300"
                             style={{ width: `${Math.min(paymentRate, 100)}%` }}
                         ></div>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1 hidden md:block">
+                    <p className="text-xs text-muted-foreground mt-0.5 hidden md:block">
                         {paidBillsThisMonth} of {totalBillsThisMonth} bills paid
                     </p>
                 </CardContent>
@@ -141,13 +141,13 @@ export function AnalyticsCards({
 
             {/* Overdue Bills - Compact */}
             <Card className="col-span-1">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
                     <CardTitle className="text-xs md:text-sm font-medium">
                         Overdue
                     </CardTitle>
                     <AlertTriangle className="h-3 w-3 md:h-4 md:w-4 text-red-500" />
                 </CardHeader>
-                <CardContent className="pb-3 md:pb-6">
+                <CardContent className="pb-2 md:pb-3">
                     <div className="text-lg md:text-2xl font-bold text-red-600">
                         {analytics.overdueCount}
                     </div>
@@ -157,20 +157,20 @@ export function AnalyticsCards({
                     <p className="text-xs text-muted-foreground md:hidden">
                         {analytics.overdueAmount > 0
                             ? formatCurrency(analytics.overdueAmount)
-                            : "None"}
+                            : `${formatCurrency(0)} total`}
                     </p>
                 </CardContent>
             </Card>
 
             {/* Upcoming This Week - Spans 2 columns on mobile for balance */}
             <Card className="col-span-2 md:col-span-1">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
                     <CardTitle className="text-xs md:text-sm font-medium">
                         Due This Week
                     </CardTitle>
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
-                <CardContent className="pb-3 md:pb-6">
+                <CardContent className="pb-2 md:pb-3">
                     <div className="text-lg md:text-2xl font-bold text-amber-600">
                         {analytics.upcomingThisWeek}
                     </div>

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 import { BillDetailsSheet } from "@/components/bill-details-sheet";
 import { AnalyticsCards } from "@/components/analytics-cards";
@@ -26,7 +26,6 @@ export function DashboardCalendar({
     const [selectedBill, setSelectedBill] = useState<DueInstance | null>(null);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-    const { toast } = useToast();
     const router = useRouter();
     const supabase = createClient();
 
@@ -93,22 +92,14 @@ export function DashboardCalendar({
                 throw error;
             }
 
-            toast({
-                title: "Marked as paid",
-                description: "The payment has been marked as paid.",
-            });
+            toast.success("The payment has been marked as paid.");
 
             if (onRefresh) {
                 onRefresh();
             }
         } catch (error) {
             console.error("Error marking as paid:", error);
-            toast({
-                title: "Error",
-                description:
-                    "Failed to mark payment as paid. Please try again.",
-                variant: "destructive",
-            });
+            toast.error("Failed to mark payment as paid. Please try again.");
         } finally {
             setProcessing((prev) => ({ ...prev, [dueId]: false }));
         }
@@ -134,22 +125,14 @@ export function DashboardCalendar({
                 throw error;
             }
 
-            toast({
-                title: "Marked as unpaid",
-                description: "The payment has been marked as unpaid.",
-            });
+            toast.success("The payment has been marked as unpaid.");
 
             if (onRefresh) {
                 onRefresh();
             }
         } catch (error) {
             console.error("Error marking as unpaid:", error);
-            toast({
-                title: "Error",
-                description:
-                    "Failed to mark payment as unpaid. Please try again.",
-                variant: "destructive",
-            });
+            toast.error("Failed to mark payment as unpaid. Please try again.");
         } finally {
             setProcessing((prev) => ({ ...prev, [dueId]: false }));
         }
