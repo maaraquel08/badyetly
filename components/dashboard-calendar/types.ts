@@ -33,13 +33,3 @@ export interface CalendarCellProps {
     onMarkAsPaid: (dueId: string, event: React.MouseEvent) => void;
     processing: Record<string, boolean>;
 }
-
-export interface MobileCalendarCellProps {
-    date: Date;
-    dues: DueInstance[];
-    isToday: boolean;
-    onCellClick: (date: Date) => void;
-    onBillClick: (due: DueInstance, event: React.MouseEvent) => void;
-    onMarkAsPaid: (dueId: string, event: React.MouseEvent) => void;
-    processing: Record<string, boolean>;
-}

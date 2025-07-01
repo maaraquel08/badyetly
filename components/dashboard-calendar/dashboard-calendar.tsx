@@ -4,16 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Calendar, List } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 import { BillDetailsSheet } from "@/components/bill-details-sheet";
 import { AnalyticsCards } from "@/components/analytics-cards";
 import { createClient } from "@/lib/supabase";
-import { format, addDays, startOfWeek } from "date-fns";
+import { format } from "date-fns";
 
 import { DesktopCalendarView } from "./desktop-calendar-view";
-import { MobileCalendarView } from "./mobile-calendar-view";
 import { ListView } from "./list-view";
 import type { DashboardCalendarProps, DueInstance } from "./types";
 
@@ -22,14 +21,11 @@ export function DashboardCalendar({
     onRefresh,
 }: DashboardCalendarProps) {
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [mobileStartDate, setMobileStartDate] = useState(() => {
-        // Start from the beginning of current week for mobile view
-        return startOfWeek(new Date(), { weekStartsOn: 0 });
-    });
+
     const [processing, setProcessing] = useState<Record<string, boolean>>({});
     const [selectedBill, setSelectedBill] = useState<DueInstance | null>(null);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
-    const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
+
     const { toast } = useToast();
     const router = useRouter();
     const supabase = createClient();
@@ -77,16 +73,6 @@ export function DashboardCalendar({
                 newDate.setMonth(prev.getMonth() + 1);
             }
             return newDate;
-        });
-    };
-
-    const navigateMobileDays = (direction: "prev" | "next") => {
-        setMobileStartDate((prev) => {
-            if (direction === "prev") {
-                return addDays(prev, -7);
-            } else {
-                return addDays(prev, 7);
-            }
         });
     };
 
@@ -197,17 +183,9 @@ export function DashboardCalendar({
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-xl md:text-2xl font-bold">
-                            {/* Mobile: Show current 7-day range or month for list view */}
+                            {/* Mobile: Show month for list view */}
                             <span className="md:hidden">
-                                {viewMode === "list"
-                                    ? `${monthNames[month]} ${year}`
-                                    : `${format(
-                                          mobileStartDate,
-                                          "MMM d"
-                                      )} - ${format(
-                                          addDays(mobileStartDate, 6),
-                                          "d"
-                                      )}`}
+                                {monthNames[month]} {year}
                             </span>
                             {/* Desktop: Show month */}
                             <span className="hidden md:inline">
@@ -215,34 +193,6 @@ export function DashboardCalendar({
                             </span>
                         </CardTitle>
                         <div className="flex items-center space-x-2">
-                            {/* View toggle for mobile */}
-                            <div className="md:hidden flex border rounded-lg">
-                                <Button
-                                    variant={
-                                        viewMode === "calendar"
-                                            ? "default"
-                                            : "ghost"
-                                    }
-                                    size="sm"
-                                    className="h-8 px-2"
-                                    onClick={() => setViewMode("calendar")}
-                                >
-                                    <Calendar className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                    variant={
-                                        viewMode === "list"
-                                            ? "default"
-                                            : "ghost"
-                                    }
-                                    size="sm"
-                                    className="h-8 px-2"
-                                    onClick={() => setViewMode("list")}
-                                >
-                                    <List className="h-4 w-4" />
-                                </Button>
-                            </div>
-
                             {/* Desktop navigation */}
                             <div className="hidden md:flex items-center space-x-2">
                                 <Button
@@ -272,26 +222,24 @@ export function DashboardCalendar({
                             </div>
 
                             {/* Mobile navigation for list view */}
-                            {viewMode === "list" && (
-                                <div className="md:hidden flex items-center space-x-2">
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        onClick={() => navigateMonth("prev")}
-                                    >
-                                        <ChevronLeft className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        onClick={() => navigateMonth("next")}
-                                    >
-                                        <ChevronRight className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            )}
+                            <div className="md:hidden flex items-center space-x-2">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => navigateMonth("prev")}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => navigateMonth("next")}
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </CardHeader>
@@ -306,28 +254,14 @@ export function DashboardCalendar({
 
                     {/* Mobile views */}
                     <div className="md:hidden">
-                        {viewMode === "calendar" ? (
-                            <MobileCalendarView
-                                mobileStartDate={mobileStartDate}
-                                today={today}
-                                dueInstances={dueInstances}
-                                onNavigateMobileDays={navigateMobileDays}
-                                onSetMobileStartDate={setMobileStartDate}
-                                onCellClick={handleCellClick}
-                                onBillClick={handleBillClick}
-                                onMarkAsPaid={handleMarkAsPaid}
-                                processing={processing}
-                            />
-                        ) : (
-                            <ListView
-                                dueInstances={dueInstances}
-                                currentDate={currentDate}
-                                today={today}
-                                onBillClick={handleBillClick}
-                                onMarkAsPaid={handleMarkAsPaid}
-                                processing={processing}
-                            />
-                        )}
+                        <ListView
+                            dueInstances={dueInstances}
+                            currentDate={currentDate}
+                            today={today}
+                            onBillClick={handleBillClick}
+                            onMarkAsPaid={handleMarkAsPaid}
+                            processing={processing}
+                        />
                     </div>
 
                     {/* Desktop view */}
