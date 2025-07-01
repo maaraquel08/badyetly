@@ -157,7 +157,7 @@ export function AnalyticsCards({
                     <p className="text-xs text-muted-foreground md:hidden">
                         {analytics.overdueAmount > 0
                             ? formatCurrency(analytics.overdueAmount)
-                            : "₱0.00 total"}
+                            : `${formatCurrency(0)} total`}
                     </p>
                 </CardContent>
             </Card>
