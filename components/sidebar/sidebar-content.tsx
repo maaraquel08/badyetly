@@ -35,11 +35,6 @@ export function SidebarContent({ forMobile = false }: SidebarContentProps) {
     const { isCompact, toggleSidebar } = useSidebar();
     const { signOut } = useAuth();
     const { toast } = useToast();
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-    const handleMobileMenuClose = () => {
-        setIsMobileMenuOpen(false);
-    };
 
     const handleSignOut = async () => {
         try {
@@ -89,7 +84,7 @@ export function SidebarContent({ forMobile = false }: SidebarContentProps) {
                         >
                             <Link
                                 href="/dashboard"
-                                onClick={handleMobileMenuClose}
+                                onClick={() => {}}
                                 className="flex items-center justify-start w-full h-full gap-2"
                             >
                                 <motion.div
@@ -182,9 +177,7 @@ export function SidebarContent({ forMobile = false }: SidebarContentProps) {
                                             isActive={isActive}
                                             isCompact={isCompact}
                                             forMobile={forMobile}
-                                            onMobileMenuClose={
-                                                handleMobileMenuClose
-                                            }
+                                            onMobileMenuClose={() => {}}
                                         />
                                     </motion.div>
                                 );
