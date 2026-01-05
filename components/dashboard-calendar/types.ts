@@ -3,10 +3,11 @@ export interface DueInstance {
     due_date: string;
     is_paid: boolean;
     paid_on?: string;
+    paid_amount?: number | null;
     monthly_dues: {
         id: string;
         title: string;
-        amount: number;
+        amount: number | null;
         category: string;
         recurrence: string;
         recurrence_frequency: number;

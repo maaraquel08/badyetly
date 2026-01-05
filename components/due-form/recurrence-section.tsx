@@ -9,7 +9,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Calendar, Clock, Repeat } from "lucide-react";
 import { format, isValid } from "date-fns";
 
@@ -58,7 +57,7 @@ export function RecurrenceSection({
                     Recurrence Settings
                 </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 border-0 [boxSizing:content-box]">
                 {/* Basic Recurrence */}
                 <div className="space-y-2">
                     <Label htmlFor="recurrence">
@@ -201,8 +200,6 @@ export function RecurrenceSection({
                         </div>
                     </div>
                 </div>
-
-                <Separator />
             </CardContent>
         </Card>
     );

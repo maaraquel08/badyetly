@@ -6,6 +6,7 @@ export interface Database {
                     id: string;
                     email: string;
                     name: string | null;
+                    monthly_salary: number | null;
                     created_at: string;
                     updated_at: string;
                 };
@@ -13,6 +14,7 @@ export interface Database {
                     id: string;
                     email: string;
                     name?: string | null;
+                    monthly_salary?: number | null;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -20,6 +22,7 @@ export interface Database {
                     id?: string;
                     email?: string;
                     name?: string | null;
+                    monthly_salary?: number | null;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -29,7 +32,7 @@ export interface Database {
                     id: string;
                     user_id: string;
                     title: string;
-                    amount: number;
+                    amount: number | null;
                     category: string;
                     notes: string | null;
                     due_day: number;
@@ -41,7 +44,7 @@ export interface Database {
                     id?: string;
                     user_id: string;
                     title: string;
-                    amount: number;
+                    amount: number | null;
                     category: string;
                     notes?: string | null;
                     due_day: number;
@@ -53,7 +56,7 @@ export interface Database {
                     id?: string;
                     user_id?: string;
                     title?: string;
-                    amount?: number;
+                    amount?: number | null;
                     category?: string;
                     notes?: string | null;
                     due_day?: number;
@@ -69,6 +72,7 @@ export interface Database {
                     due_date: string;
                     is_paid: boolean | null;
                     paid_on: string | null;
+                    paid_amount: number | null;
                     created_at: string;
                 };
                 Insert: {
@@ -77,6 +81,7 @@ export interface Database {
                     due_date: string;
                     is_paid?: boolean | null;
                     paid_on?: string | null;
+                    paid_amount?: number | null;
                     created_at?: string;
                 };
                 Update: {
@@ -85,6 +90,7 @@ export interface Database {
                     due_date?: string;
                     is_paid?: boolean | null;
                     paid_on?: string | null;
+                    paid_amount?: number | null;
                     created_at?: string;
                 };
             };

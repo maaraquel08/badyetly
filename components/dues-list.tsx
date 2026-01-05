@@ -123,7 +123,7 @@ export function DuesList({
                                 <div className="flex items-center gap-2">
                                     <div className="text-right font-medium">
                                         {formatCurrency(
-                                            due.monthly_dues.amount
+                                            due.monthly_dues.amount || 0
                                         )}
                                     </div>
                                     <Badge

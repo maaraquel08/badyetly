@@ -80,7 +80,9 @@ export function DueForm({
         const formattedData = {
             ...formData,
             start_date: format(formData.start_date, "yyyy-MM-dd"),
-            amount: Number.parseFloat(formData.amount),
+            amount: formData.amount && formData.amount.trim() !== ""
+                ? Number.parseFloat(formData.amount)
+                : null,
             due_day: formData.due_day
                 ? Number.parseInt(formData.due_day)
                 : formData.start_date.getDate(),

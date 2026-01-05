@@ -5,7 +5,10 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number | null | undefined): string {
+    if (amount === null || amount === undefined) {
+        return "Varies";
+    }
     return new Intl.NumberFormat("en-PH", {
         style: "currency",
         currency: "PHP",
@@ -26,6 +29,12 @@ export function getCategoryColor(category: string) {
             return "bg-blue-100 text-blue-800";
         case "loan":
             return "bg-amber-100 text-amber-800";
+        case "cards":
+            return "bg-indigo-100 text-indigo-800";
+        case "savings":
+            return "bg-emerald-100 text-emerald-800";
+        case "investment":
+            return "bg-teal-100 text-teal-800";
         case "subscription":
             return "bg-purple-100 text-purple-800";
         case "phone":
@@ -51,6 +60,12 @@ export function getCategoryBackgroundColor(category: string) {
             return "bg-blue-50 border-blue-200";
         case "loan":
             return "bg-amber-50 border-amber-200";
+        case "cards":
+            return "bg-indigo-50 border-indigo-200";
+        case "savings":
+            return "bg-emerald-50 border-emerald-200";
+        case "investment":
+            return "bg-teal-50 border-teal-200";
         case "subscription":
             return "bg-purple-50 border-purple-200";
         case "phone":
@@ -64,4 +79,17 @@ export function getCategoryBackgroundColor(category: string) {
         default:
             return "bg-gray-50 border-gray-200";
     }
+}
+
+/**
+ * Categories that support varying/optional amounts
+ * These categories allow users to leave amount empty and enter it when marking as paid
+ */
+export const VARYING_AMOUNT_CATEGORIES = ["cards", "utilities"] as const;
+
+export function supportsVaryingAmount(category: string | null | undefined): boolean {
+    if (!category) return false;
+    return VARYING_AMOUNT_CATEGORIES.includes(
+        category.toLowerCase() as typeof VARYING_AMOUNT_CATEGORIES[number]
+    );
 }

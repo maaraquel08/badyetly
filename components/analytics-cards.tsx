@@ -32,15 +32,23 @@ export function AnalyticsCards({
     });
 
     // Calculate analytics
+    const getAmount = (due: any) => {
+        // Use paid_amount if available, otherwise use monthly_dues.amount
+        if (due.paid_amount !== null && due.paid_amount !== undefined) {
+            return due.paid_amount;
+        }
+        return due.monthly_dues?.amount || 0;
+    };
+
     const analytics = {
         totalMonthlyAmount: currentMonthDues.reduce(
-            (sum, due) => sum + due.monthly_dues.amount,
+            (sum, due) => sum + getAmount(due),
             0
         ),
 
         paidAmount: currentMonthDues
             .filter((due) => due.is_paid)
-            .reduce((sum, due) => sum + due.monthly_dues.amount, 0),
+            .reduce((sum, due) => sum + getAmount(due), 0),
 
         overdueCount: dueInstances.filter((due) => {
             const dueDate = new Date(due.due_date);
@@ -52,7 +60,7 @@ export function AnalyticsCards({
                 const dueDate = new Date(due.due_date);
                 return dueDate < today && !due.is_paid;
             })
-            .reduce((sum, due) => sum + due.monthly_dues.amount, 0),
+            .reduce((sum, due) => sum + getAmount(due), 0),
 
         upcomingThisWeek: dueInstances.filter((due) => {
             const dueDate = new Date(due.due_date);

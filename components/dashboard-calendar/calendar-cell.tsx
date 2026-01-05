@@ -27,12 +27,23 @@ export function CalendarCell({
 
     // Calculate totals for hover card
     const totalAmount = dues.reduce(
-        (sum, due) => sum + (due.monthly_dues?.amount || 0),
+        (sum, due) =>
+            sum +
+            (due.paid_amount !== null && due.paid_amount !== undefined
+                ? due.paid_amount
+                : due.monthly_dues?.amount || 0),
         0
     );
     const paidAmount = dues
         .filter((due) => due.is_paid)
-        .reduce((sum, due) => sum + (due.monthly_dues?.amount || 0), 0);
+        .reduce(
+            (sum, due) =>
+                sum +
+                (due.paid_amount !== null && due.paid_amount !== undefined
+                    ? due.paid_amount
+                    : due.monthly_dues?.amount || 0),
+            0
+        );
     const unpaidAmount = totalAmount - paidAmount;
     const unpaidCount = dues.filter((due) => !due.is_paid).length;
     const paidCount = dues.filter((due) => due.is_paid).length;
@@ -76,7 +87,10 @@ export function CalendarCell({
                                     </div>
                                     <div className="truncate text-gray-600">
                                         {formatCurrency(
-                                            due.monthly_dues?.amount || 0
+                                            due.paid_amount !== null &&
+                                                due.paid_amount !== undefined
+                                                ? due.paid_amount
+                                                : due.monthly_dues?.amount
                                         )}
                                     </div>
                                 </div>
