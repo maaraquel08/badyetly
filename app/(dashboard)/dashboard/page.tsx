@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { DashboardCalendar } from "@/components/dashboard-calendar";
@@ -15,6 +16,7 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const { user } = useAuth();
+    const pathname = usePathname();
 
     const fetchDueInstances = useCallback(async () => {
         if (!user) return;
@@ -63,6 +65,33 @@ export default function DashboardPage() {
         if (user) {
             fetchDueInstances();
         }
+    }, [user, fetchDueInstances]);
+
+    // Refresh data when navigating to dashboard (e.g., after editing a due)
+    useEffect(() => {
+        if (pathname === "/dashboard" && user) {
+            fetchDueInstances();
+        }
+    }, [pathname, user, fetchDueInstances]);
+
+    // Also refresh when page becomes visible (fallback for when component doesn't remount)
+    useEffect(() => {
+        if (!user) return;
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible") {
+                fetchDueInstances();
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange
+            );
+        };
     }, [user, fetchDueInstances]);
 
     if (loading) {
