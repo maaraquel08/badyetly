@@ -52,6 +52,7 @@ export function DueForm({
                     initialData.recurrence_frequency?.toString() || "1",
                 occurrences: initialData.occurrences?.toString() || "12",
                 end_type: initialData.end_type || "never",
+                notes: initialData.notes ?? "",
             });
         }
     }, [initialData]);

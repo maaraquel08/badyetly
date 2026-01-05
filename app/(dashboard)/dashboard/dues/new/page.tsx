@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/lib/supabase";
 import { useAuth } from "@/components/auth-provider";
 import { ArrowLeft } from "lucide-react";
+import { supportsVaryingAmount } from "@/lib/utils";
 
 export default function NewDuePage() {
     const { toast } = useToast();
@@ -21,6 +22,73 @@ export default function NewDuePage() {
             toast({
                 title: "Authentication required",
                 description: "Please log in to create a due.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        // Validate required fields
+        if (!formData.title?.trim()) {
+            toast({
+                title: "Validation error",
+                description: "Title is required.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        if (!formData.category?.trim()) {
+            toast({
+                title: "Validation error",
+                description: "Category is required.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        // Check if category supports optional amounts
+        const categorySupportsOptionalAmount = supportsVaryingAmount(
+            formData.category
+        );
+
+        // Process amount value
+        let amountValue: number | null = null;
+        if (
+            typeof formData.amount === "number" &&
+            !Number.isNaN(formData.amount) &&
+            formData.amount !== null
+        ) {
+            amountValue = formData.amount;
+        } else if (
+            formData.amount &&
+            typeof formData.amount === "string" &&
+            formData.amount.trim() !== ""
+        ) {
+            const parsed = Number.parseFloat(formData.amount);
+            if (!Number.isNaN(parsed)) {
+                amountValue = parsed;
+            }
+        }
+
+        // Validate amount based on category
+        if (!categorySupportsOptionalAmount && amountValue === null) {
+            toast({
+                title: "Validation error",
+                description: "Amount is required for this category.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        // If category supports optional amount, allow null or 0
+        // Otherwise, ensure we have a valid positive amount
+        if (
+            !categorySupportsOptionalAmount &&
+            (amountValue === null || amountValue <= 0)
+        ) {
+            toast({
+                title: "Validation error",
+                description: "Please enter a valid amount greater than 0.",
                 variant: "destructive",
             });
             return;
@@ -43,23 +111,32 @@ export default function NewDuePage() {
                 .from("monthly_dues")
                 .insert({
                     user_id: user.id,
-                    title: formData.title,
+                    title: formData.title.trim(),
                     amount: amountValue,
-                    category: formData.category,
+                    category: formData.category.trim(),
                     start_date: formData.start_date,
-                    recurrence: formData.recurrence,
-                    recurrence_frequency: formData.recurrence_frequency,
-                    due_day: formData.due_day,
+                    recurrence: formData.recurrence || "monthly",
+                    recurrence_frequency: formData.recurrence_frequency || 1,
+                    due_day: formData.due_day || null,
                     status: formData.status || "active",
-                    notes: formData.notes,
-                    end_type: formData.end_type,
-                    end_date: formData.end_date,
-                    occurrences: formData.occurrences,
+                    notes: formData.notes?.trim() || null,
+                    end_type: formData.end_type || "never",
+                    end_date: formData.end_date || null,
+                    occurrences: formData.occurrences || null,
                 })
                 .select()
                 .single();
 
-            if (monthlyDueError) throw monthlyDueError;
+            if (monthlyDueError) {
+                console.error("Error creating monthly due:", {
+                    error: monthlyDueError,
+                    message: monthlyDueError.message,
+                    details: monthlyDueError.details,
+                    hint: monthlyDueError.hint,
+                    code: monthlyDueError.code,
+                });
+                throw monthlyDueError;
+            }
 
             // Generate due instances
             const dueInstances = generateDueInstances(monthlyDue, formData);
@@ -69,7 +146,16 @@ export default function NewDuePage() {
                 .from("due_instances")
                 .insert(dueInstances);
 
-            if (instancesError) throw instancesError;
+            if (instancesError) {
+                console.error("Error creating due instances:", {
+                    error: instancesError,
+                    message: instancesError.message,
+                    details: instancesError.details,
+                    hint: instancesError.hint,
+                    code: instancesError.code,
+                });
+                throw instancesError;
+            }
 
             toast({
                 title: "Due created successfully",
@@ -77,14 +163,32 @@ export default function NewDuePage() {
             });
 
             router.push("/dashboard");
-        } catch (error) {
-            console.error("Error creating due:", error);
+        } catch (error: any) {
+            console.error("Error creating due:", {
+                error,
+                message: error?.message,
+                details: error?.details,
+                hint: error?.hint,
+                code: error?.code,
+            });
+
+            // Extract a user-friendly error message
+            let errorMessage =
+                "There was an error creating your monthly due. Please try again.";
+
+            if (error?.message) {
+                errorMessage = error.message;
+            } else if (error?.details) {
+                errorMessage = error.details;
+            } else if (error?.hint) {
+                errorMessage = error.hint;
+            } else if (typeof error === "string") {
+                errorMessage = error;
+            }
+
             toast({
                 title: "Error creating due",
-                description:
-                    error instanceof Error
-                        ? error.message
-                        : "There was an error creating your monthly due. Please try again.",
+                description: errorMessage,
                 variant: "destructive",
             });
         } finally {

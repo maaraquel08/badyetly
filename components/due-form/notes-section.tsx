@@ -17,7 +17,7 @@ export function NotesSection({ notes, onInputChange }: NotesSectionProps) {
                         id="notes"
                         name="notes"
                         placeholder="e.g., Pay via GCash, Account number: 123456"
-                        value={notes}
+                        value={notes ?? ""}
                         onChange={onInputChange}
                         rows={3}
                     />

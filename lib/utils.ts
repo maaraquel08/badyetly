@@ -85,7 +85,12 @@ export function getCategoryBackgroundColor(category: string) {
  * Categories that support varying/optional amounts
  * These categories allow users to leave amount empty and enter it when marking as paid
  */
-export const VARYING_AMOUNT_CATEGORIES = ["cards", "utilities"] as const;
+export const VARYING_AMOUNT_CATEGORIES = [
+    "cards",
+    "utilities",
+    "savings",
+    "investment",
+] as const;
 
 export function supportsVaryingAmount(category: string | null | undefined): boolean {
     if (!category) return false;
