@@ -32,12 +32,19 @@ export default function NewDuePage() {
             const supabase = createClient();
 
             // Create the monthly due
+            // Amount is already converted to number or null by the form component
+            const amountValue =
+                typeof formData.amount === "number" &&
+                !Number.isNaN(formData.amount)
+                    ? formData.amount
+                    : null;
+
             const { data: monthlyDue, error: monthlyDueError } = await supabase
                 .from("monthly_dues")
                 .insert({
                     user_id: user.id,
                     title: formData.title,
-                    amount: formData.amount,
+                    amount: amountValue,
                     category: formData.category,
                     start_date: formData.start_date,
                     recurrence: formData.recurrence,

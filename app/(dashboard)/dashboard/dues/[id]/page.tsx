@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { DashboardHeader } from "@/components/dashboard-header";
@@ -28,8 +28,7 @@ interface EditDuePageProps {
 }
 
 export default function EditDuePage({ params }: EditDuePageProps) {
-    const resolvedParams = React.use(params);
-    const { id } = resolvedParams;
+    const { id } = use(params);
     const supabase = createClient();
     const { toast } = useToast();
     const router = useRouter();
@@ -127,11 +126,17 @@ export default function EditDuePage({ params }: EditDuePageProps) {
         setIsSubmitting(true);
         try {
             // First update the monthly due
+            // Handle null amount for cards category
+            const amountValue =
+                formData.amount !== null && formData.amount !== undefined
+                    ? formData.amount
+                    : null;
+
             const { error } = await supabase
                 .from("monthly_dues")
                 .update({
                     title: formData.title,
-                    amount: formData.amount,
+                    amount: amountValue,
                     category: formData.category,
                     start_date: formData.start_date,
                     recurrence: formData.recurrence,
@@ -148,13 +153,12 @@ export default function EditDuePage({ params }: EditDuePageProps) {
 
             if (error) throw error;
 
-            // Delete existing future due instances
-            const today = new Date().toISOString().split("T")[0];
+            // Delete ALL unpaid due instances (not just future ones)
+            // This ensures we don't have duplicates when changing due dates
             await supabase
                 .from("due_instances")
                 .delete()
                 .eq("monthly_due_id", id)
-                .gt("due_date", today)
                 .is("is_paid", false);
 
             // Generate new due instances based on updated recurrence settings

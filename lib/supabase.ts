@@ -24,18 +24,21 @@ export type Database = {
                     id: string;
                     email: string;
                     name: string | null;
+                    monthly_salary: number | null;
                     created_at: string;
                 };
                 Insert: {
                     id?: string;
                     email: string;
                     name?: string | null;
+                    monthly_salary?: number | null;
                     created_at?: string;
                 };
                 Update: {
                     id?: string;
                     email?: string;
                     name?: string | null;
+                    monthly_salary?: number | null;
                     created_at?: string;
                 };
             };
@@ -44,7 +47,7 @@ export type Database = {
                     id: string;
                     user_id: string | null;
                     title: string;
-                    amount: number;
+                    amount: number | null;
                     category: string;
                     start_date: string;
                     recurrence: string;
@@ -60,7 +63,7 @@ export type Database = {
                     id?: string;
                     user_id?: string | null;
                     title: string;
-                    amount: number;
+                    amount: number | null;
                     category: string;
                     start_date: string;
                     recurrence?: string;
@@ -76,7 +79,7 @@ export type Database = {
                     id?: string;
                     user_id?: string | null;
                     title?: string;
-                    amount?: number;
+                    amount?: number | null;
                     category?: string;
                     start_date?: string;
                     recurrence?: string;
@@ -96,6 +99,7 @@ export type Database = {
                     due_date: string;
                     is_paid: boolean | null;
                     paid_on: string | null;
+                    paid_amount: number | null;
                     created_at: string;
                 };
                 Insert: {
@@ -104,6 +108,7 @@ export type Database = {
                     due_date: string;
                     is_paid?: boolean | null;
                     paid_on?: string | null;
+                    paid_amount?: number | null;
                     created_at?: string;
                 };
                 Update: {
@@ -112,6 +117,7 @@ export type Database = {
                     due_date?: string;
                     is_paid?: boolean | null;
                     paid_on?: string | null;
+                    paid_amount?: number | null;
                     created_at?: string;
                 };
             };

@@ -1,31 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { DashboardCalendar } from "@/components/dashboard-calendar";
-import { AnalyticsCards } from "@/components/analytics-cards";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase";
 import { useAuth } from "@/components/auth-provider";
-
-interface DueInstance {
-    id: string;
-    monthly_due_id: string | null;
-    due_date: string;
-    is_paid: boolean | null;
-    paid_on: string | null;
-    created_at: string;
-    monthly_dues: {
-        id: string;
-        title: string;
-        amount: number;
-        category: string;
-        notes: string | null;
-        user_id: string;
-    };
-}
+import type { DueInstance } from "@/components/dashboard-calendar/types";
 
 export default function DashboardPage() {
     const [dueInstances, setDueInstances] = useState<DueInstance[]>([]);
@@ -33,13 +16,7 @@ export default function DashboardPage() {
     const [error, setError] = useState<string | null>(null);
     const { user } = useAuth();
 
-    useEffect(() => {
-        if (user) {
-            fetchDueInstances();
-        }
-    }, [user]);
-
-    const fetchDueInstances = async () => {
+    const fetchDueInstances = useCallback(async () => {
         if (!user) return;
 
         try {
@@ -67,7 +44,12 @@ export default function DashboardPage() {
 
             if (fetchError) throw fetchError;
 
-            setDueInstances(data || []);
+            setDueInstances(
+                (data || []).map((row) => ({
+                    ...row,
+                    is_paid: !!row.is_paid,
+                }))
+            );
         } catch (err) {
             setError(
                 err instanceof Error ? err.message : "Failed to load data"
@@ -75,7 +57,13 @@ export default function DashboardPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
+
+    useEffect(() => {
+        if (user) {
+            fetchDueInstances();
+        }
+    }, [user, fetchDueInstances]);
 
     if (loading) {
         return (

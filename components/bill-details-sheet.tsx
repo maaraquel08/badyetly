@@ -1,6 +1,7 @@
 "use client";
 
 import type React from "react";
+import { useState } from "react";
 
 import {
     Sheet,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PaymentAmountDialog } from "@/components/payment-amount-dialog";
 
 import {
     Check,
@@ -21,14 +23,14 @@ import {
     Clock,
     X,
 } from "lucide-react";
-import { formatCurrency, getCategoryColor } from "@/lib/utils";
+import { formatCurrency, getCategoryColor, supportsVaryingAmount } from "@/lib/utils";
 import { format } from "date-fns";
 
 interface BillDetailsSheetProps {
     bill: any;
     isOpen: boolean;
     onClose: () => void;
-    onMarkAsPaid: (dueId: string, event: React.MouseEvent) => void;
+    onMarkAsPaid: (dueId: string, event: React.MouseEvent, paidAmount?: number) => void;
     onMarkAsUnpaid?: (dueId: string, event: React.MouseEvent) => void;
     processing: Record<string, boolean>;
 }
@@ -41,7 +43,30 @@ export function BillDetailsSheet({
     onMarkAsUnpaid,
     processing,
 }: BillDetailsSheetProps) {
+    const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+
     if (!bill) return null;
+
+    const handleMarkAsPaidClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const needsPaymentAmount =
+            supportsVaryingAmount(bill.monthly_dues?.category) ||
+            bill.monthly_dues?.amount === null;
+
+        if (needsPaymentAmount) {
+            setPaymentDialogOpen(true);
+        } else {
+            onMarkAsPaid(bill.id, e);
+        }
+    };
+
+    const handlePaymentConfirm = (amount: number) => {
+        const syntheticEvent = {
+            stopPropagation: () => {},
+        } as React.MouseEvent;
+        onMarkAsPaid(bill.id, syntheticEvent, amount);
+        setPaymentDialogOpen(false);
+    };
 
     const getStatusInfo = () => {
         const dueDate = new Date(bill.due_date);
@@ -98,8 +123,22 @@ export function BillDetailsSheet({
                     {/* Amount and Status */}
                     <div className="rounded-xl p-6 text-center">
                         <div className="text-3xl font-bold text-foreground mb-3">
-                            {formatCurrency(bill.monthly_dues.amount || 0)}
+                            {formatCurrency(
+                                bill.paid_amount !== null &&
+                                    bill.paid_amount !== undefined
+                                    ? bill.paid_amount
+                                    : bill.monthly_dues?.amount
+                            )}
                         </div>
+                        {bill.paid_amount !== null &&
+                            bill.paid_amount !== undefined &&
+                            bill.monthly_dues?.amount !== null &&
+                            bill.paid_amount !== bill.monthly_dues.amount && (
+                                <div className="text-sm text-muted-foreground mb-2">
+                                    Original:{" "}
+                                    {formatCurrency(bill.monthly_dues.amount)}
+                                </div>
+                            )}
                         <div className="flex items-center justify-center gap-2">
                             <StatusIcon className="h-4 w-4" />
                             <Badge
@@ -248,7 +287,7 @@ export function BillDetailsSheet({
                     {!bill.is_paid ? (
                         <Button
                             className="w-full"
-                            onClick={(e) => onMarkAsPaid(bill.id, e)}
+                            onClick={handleMarkAsPaidClick}
                             disabled={processing[bill.id]}
                         >
                             {processing[bill.id] ? (
@@ -289,6 +328,14 @@ export function BillDetailsSheet({
                     </Button>
                 </div>
             </SheetContent>
+
+            <PaymentAmountDialog
+                isOpen={paymentDialogOpen}
+                onClose={() => setPaymentDialogOpen(false)}
+                onConfirm={handlePaymentConfirm}
+                defaultAmount={bill.monthly_dues?.amount || null}
+                billTitle={bill.monthly_dues?.title}
+            />
         </Sheet>
     );
 }

@@ -113,7 +113,10 @@ export function ListView({
                                 <div className="text-right">
                                     <div className="font-medium text-sm">
                                         {formatCurrency(
-                                            due.monthly_dues?.amount || 0
+                                            due.paid_amount !== null &&
+                                                due.paid_amount !== undefined
+                                                ? due.paid_amount
+                                                : due.monthly_dues?.amount
                                         )}
                                     </div>
                                     <div

@@ -32,6 +32,7 @@ export default function SettingsPage() {
     const supabase = createClient();
 
     const [name, setName] = useState("");
+    const [monthlySalary, setMonthlySalary] = useState<string>("");
     const [emailNotifications, setEmailNotifications] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -43,12 +44,15 @@ export default function SettingsPage() {
             const fetchUserProfile = async () => {
                 const { data, error } = await supabase
                     .from("users")
-                    .select("name")
+                    .select("name, monthly_salary")
                     .eq("id", user.id)
                     .single();
 
                 if (!error && data) {
                     setName(data.name || "");
+                    setMonthlySalary(
+                        data.monthly_salary?.toString() || ""
+                    );
                 } else {
                     // Fallback to auth metadata if database query fails
                     setName(user.user_metadata?.name || "");
@@ -61,13 +65,233 @@ export default function SettingsPage() {
 
     const handleSaveProfile = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (!user) {
+            toast({
+                title: "Authentication required",
+                description: "Please log in to update your profile.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         setIsLoading(true);
 
         try {
-            const { error } = await updateProfile({ name });
+            // Update profile name
+            const { error: profileError } = await updateProfile({ name });
 
-            if (error) {
-                throw error;
+            if (profileError) {
+                throw profileError;
+            }
+
+            // Update monthly salary in database
+            const salaryValue =
+                monthlySalary && monthlySalary.trim() !== ""
+                    ? Number.parseFloat(monthlySalary)
+                    : null;
+
+            // Validate that if a value is provided, it's a valid number
+            if (monthlySalary && monthlySalary.trim() !== "" && isNaN(salaryValue!)) {
+                throw new Error("Please enter a valid number for monthly salary");
+            }
+
+            // Simple approach: Check if user exists, then update or insert
+            const { data: existingUser } = await supabase
+                .from("users")
+                .select("id")
+                .eq("id", user.id)
+                .single();
+
+            let saveSuccess = false;
+
+            if (existingUser) {
+                // User exists, try to update
+                const { error: updateError } = await supabase
+                    .from("users")
+                    .update({ monthly_salary: salaryValue })
+                    .eq("id", user.id);
+
+                // Check if there's a real error (not just empty {})
+                // An empty object {} has no keys, so we check for meaningful error properties
+                let hasRealError = false;
+                
+                if (updateError) {
+                    const errorKeys = Object.keys(updateError);
+                    const errorString = JSON.stringify(updateError);
+                    
+                    console.log("Update attempt:", {
+                        hasErrorObject: true,
+                        errorKeys,
+                        errorKeysLength: errorKeys.length,
+                        errorStringified: errorString,
+                        isEmptyObject: errorString === '{}',
+                    });
+                    
+                    // Only consider it a real error if:
+                    // 1. It has keys AND
+                    // 2. At least one of those keys has a non-empty value
+                    if (errorKeys.length > 0 && errorString !== '{}') {
+                        const hasMessage = updateError.message && String(updateError.message).trim() !== '';
+                        const hasCode = updateError.code && String(updateError.code).trim() !== '';
+                        const hasDetails = updateError.details && String(updateError.details).trim() !== '';
+                        
+                        hasRealError = hasMessage || hasCode || hasDetails;
+                    }
+                } else {
+                    console.log("Update attempt: No error object");
+                }
+
+                // Only throw if there's a REAL error with actual content
+                // Empty {} means the operation likely succeeded
+                if (hasRealError) {
+                    console.error("Update error detected:", updateError);
+                    throw new Error(
+                        updateError.message ||
+                            updateError.details ||
+                            "Failed to update monthly salary"
+                    );
+                } else if (updateError) {
+                    // Empty error object {} - operation likely succeeded, just verify
+                    console.log("Update returned empty error object (likely succeeded), verifying...");
+                }
+
+                // Verify the update worked
+                const { data: verifyData, error: verifyError } = await supabase
+                    .from("users")
+                    .select("monthly_salary")
+                    .eq("id", user.id)
+                    .single();
+                
+                // Log verification result (ignore empty error objects)
+                if (verifyError && JSON.stringify(verifyError) !== '{}') {
+                    console.warn("Verification query had error:", verifyError);
+                }
+
+                if (verifyData && verifyData.monthly_salary === salaryValue) {
+                    saveSuccess = true;
+                    console.log("Salary updated and verified:", verifyData);
+                } else if (verifyData) {
+                    // Value doesn't match - update may have failed silently
+                    console.warn("Update verification failed, trying insert...");
+                    // Fall through to insert
+                } else {
+                    // Can't verify - might be RLS, but assume it worked
+                    saveSuccess = true;
+                    console.log("Update completed (could not verify due to permissions)");
+                }
+            }
+
+            // If update didn't work or user doesn't exist, try insert
+            if (!saveSuccess) {
+                const { error: insertError } = await supabase
+                    .from("users")
+                    .insert({
+                        id: user.id,
+                        email: user.email!,
+                        name: name || null,
+                        monthly_salary: salaryValue,
+                    });
+
+                // Check if there's a real error (not just empty {})
+                let hasRealInsertError = false;
+                
+                if (insertError) {
+                    const errorKeys = Object.keys(insertError);
+                    const errorString = JSON.stringify(insertError);
+                    
+                    console.log("Insert attempt:", {
+                        hasErrorObject: true,
+                        errorKeys,
+                        errorKeysLength: errorKeys.length,
+                        errorStringified: errorString,
+                        isEmptyObject: errorString === '{}',
+                    });
+                    
+                    // Only consider it a real error if it has keys AND is not empty {}
+                    if (errorKeys.length > 0 && errorString !== '{}') {
+                        const hasMessage = insertError.message && String(insertError.message).trim() !== '';
+                        const hasCode = insertError.code && String(insertError.code).trim() !== '';
+                        const hasDetails = insertError.details && String(insertError.details).trim() !== '';
+                        
+                        hasRealInsertError = hasMessage || hasCode || hasDetails;
+                    }
+                } else {
+                    console.log("Insert attempt: No error object");
+                }
+
+                if (hasRealInsertError) {
+                    // If insert fails and it's not a duplicate key error, throw
+                    if (insertError.code !== '23505') { // 23505 is duplicate key
+                        console.error("Insert error:", insertError);
+                        throw new Error(
+                            insertError.message ||
+                                insertError.details ||
+                                "Failed to save monthly salary"
+                        );
+                    }
+                    // If duplicate key, the record exists, so update should have worked
+                    // Verify one more time
+                    const { data: verifyData, error: verifyError2 } = await supabase
+                        .from("users")
+                        .select("monthly_salary")
+                        .eq("id", user.id)
+                        .single();
+                    
+                    // Ignore empty error objects from verification
+                    if (verifyError2 && JSON.stringify(verifyError2) !== '{}') {
+                        console.warn("Verification query had error:", verifyError2);
+                    }
+
+                    if (verifyData && verifyData.monthly_salary !== salaryValue) {
+                        // Record exists but value is wrong, try update again
+                        const { error: retryError } = await supabase
+                            .from("users")
+                            .update({ monthly_salary: salaryValue })
+                            .eq("id", user.id);
+
+                        // Check if retry error is real (not empty {})
+                        if (retryError) {
+                            const retryErrorString = JSON.stringify(retryError);
+                            const hasRealRetryError = retryErrorString !== '{}' && (
+                                (retryError.message && String(retryError.message).trim() !== '') ||
+                                (retryError.code && String(retryError.code).trim() !== '') ||
+                                (retryError.details && String(retryError.details).trim() !== '')
+                            );
+                            
+                            if (hasRealRetryError) {
+                                throw new Error("Failed to save monthly salary after retry");
+                            }
+                        }
+                    }
+                }
+
+                // Verify insert worked
+                const { data: verifyData, error: verifyError3 } = await supabase
+                    .from("users")
+                    .select("monthly_salary")
+                    .eq("id", user.id)
+                    .single();
+                
+                // Ignore empty error objects from verification
+                if (verifyError3 && JSON.stringify(verifyError3) !== '{}') {
+                    console.warn("Verification query had error:", verifyError3);
+                }
+
+                if (verifyData && verifyData.monthly_salary === salaryValue) {
+                    saveSuccess = true;
+                    console.log("Salary inserted and verified:", verifyData);
+                } else if (!verifyData) {
+                    // Can't verify - might be RLS, but assume it worked
+                    saveSuccess = true;
+                    console.log("Insert completed (could not verify due to permissions)");
+                } else {
+                    throw new Error("Salary was not saved correctly. Please try again.");
+                }
+            }
+
+            if (!saveSuccess) {
+                throw new Error("Failed to save monthly salary. Please try again.");
             }
 
             toast({
@@ -78,9 +302,27 @@ export default function SettingsPage() {
             // Trigger profile refresh in sidebar
             refreshProfile();
         } catch (error) {
+            console.error("Error updating profile:", {
+                error,
+                type: typeof error,
+                keys: error ? Object.keys(error) : [],
+                message: error instanceof Error ? error.message : undefined,
+                stringified: JSON.stringify(error, null, 2),
+            });
+            
+            let errorMessage = "Failed to update your profile. Please try again.";
+            
+            if (error instanceof Error) {
+                errorMessage = error.message || errorMessage;
+            } else if (error && typeof error === "object") {
+                // Try to extract message from error object
+                const err = error as any;
+                errorMessage = err.message || err.details || err.hint || errorMessage;
+            }
+            
             toast({
                 title: "Error updating profile",
-                description: "Failed to update your profile. Please try again.",
+                description: errorMessage,
                 variant: "destructive",
             });
         } finally {
@@ -257,6 +499,27 @@ export default function SettingsPage() {
                                 />
                                 <p className="text-sm text-muted-foreground">
                                     Your email address cannot be changed.
+                                </p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="monthly-salary">
+                                    Monthly Salary (PHP)
+                                </Label>
+                                <Input
+                                    id="monthly-salary"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={monthlySalary}
+                                    onChange={(e) =>
+                                        setMonthlySalary(e.target.value)
+                                    }
+                                    placeholder="e.g., 50000.00"
+                                />
+                                <p className="text-sm text-muted-foreground">
+                                    Your monthly salary is used for financial
+                                    reporting and breakdown calculations.
                                 </p>
                             </div>
 

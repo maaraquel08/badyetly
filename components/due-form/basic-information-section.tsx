@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar, Info } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, supportsVaryingAmount } from "@/lib/utils";
 import { format } from "date-fns";
 
 interface BasicInformationSectionProps {
@@ -59,22 +59,7 @@ export function BasicInformationSection({
                     />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Amount */}
-                    <div className="space-y-2">
-                        <Label htmlFor="amount">Amount (PHP)</Label>
-                        <Input
-                            id="amount"
-                            name="amount"
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            value={formData.amount}
-                            onChange={onInputChange}
-                            required
-                        />
-                    </div>
-
+                <div className="flex flex-col gap-4">
                     {/* Category */}
                     <div className="space-y-2">
                         <Label htmlFor="category">Category</Label>
@@ -84,7 +69,7 @@ export function BasicInformationSection({
                                 onSelectChange("category", value)
                             }
                         >
-                            <SelectTrigger id="category">
+                            <SelectTrigger id="category" className="w-full">
                                 <SelectValue placeholder="Select a category" />
                             </SelectTrigger>
                             <SelectContent>
@@ -92,6 +77,15 @@ export function BasicInformationSection({
                                     🔌 Utilities
                                 </SelectItem>
                                 <SelectItem value="loan">💰 Loan</SelectItem>
+                                <SelectItem value="cards">
+                                    💳 Credit Cards
+                                </SelectItem>
+                                <SelectItem value="savings">
+                                    💾 Savings
+                                </SelectItem>
+                                <SelectItem value="investment">
+                                    📈 Investment
+                                </SelectItem>
                                 <SelectItem value="subscription">
                                     📺 Subscription
                                 </SelectItem>
@@ -105,6 +99,37 @@ export function BasicInformationSection({
                                 <SelectItem value="other">📋 Other</SelectItem>
                             </SelectContent>
                         </Select>
+                    </div>
+
+                    {/* Amount */}
+                    <div className="space-y-2">
+                        <Label htmlFor="amount">
+                            Amount (PHP)
+                            {supportsVaryingAmount(formData.category) && (
+                                <span className="text-muted-foreground text-xs font-normal">
+                                    {" "}(optional - amount varies)
+                                </span>
+                            )}
+                        </Label>
+                        <Input
+                            id="amount"
+                            name="amount"
+                            type="number"
+                            step="0.01"
+                            placeholder={
+                                supportsVaryingAmount(formData.category)
+                                    ? "Amount varies each month"
+                                    : "e.g., 1500.00"
+                            }
+                            value={formData.amount}
+                            onChange={onInputChange}
+                        />
+                        {supportsVaryingAmount(formData.category) && (
+                            <p className="text-xs text-muted-foreground">
+                                You can leave this empty and enter the actual
+                                amount when you mark it as paid.
+                            </p>
+                        )}
                     </div>
                 </div>
 

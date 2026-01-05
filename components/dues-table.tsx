@@ -104,7 +104,7 @@ export function DuesTable({ dues, isLoading }: DuesTableProps) {
                                         {due.title}
                                     </h3>
                                     <span className="text-lg font-bold text-primary">
-                                        {formatCurrency(due.amount)}
+                                        {formatCurrency(due.amount || 0)}
                                     </span>
                                 </div>
 
@@ -183,7 +183,7 @@ export function DuesTable({ dues, isLoading }: DuesTableProps) {
                                     {due.title}
                                 </TableCell>
                                 <TableCell>
-                                    {formatCurrency(due.amount)}
+                                    {formatCurrency(due.amount || 0)}
                                 </TableCell>
                                 <TableCell>
                                     <Badge
