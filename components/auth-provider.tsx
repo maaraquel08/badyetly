@@ -105,13 +105,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Get the current origin to ensure correct redirect URL
             // Use window.location.origin which automatically detects the correct URL
             // (localhost:3000 in development, production URL in production)
-            const origin = window.location.origin;
+            // If NEXT_PUBLIC_SITE_URL is set, use it for production consistency
+            const origin = 
+                process.env.NEXT_PUBLIC_SITE_URL || 
+                window.location.origin;
             const redirectUrl = `${origin}/auth/callback`;
             
-            // Log for debugging (remove in production if needed)
-            if (process.env.NODE_ENV === "development") {
-                console.log("OAuth redirect URL:", redirectUrl);
-            }
+            // Log for debugging
+            console.log("OAuth redirect URL:", redirectUrl);
             
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
