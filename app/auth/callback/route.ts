@@ -3,7 +3,17 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
-    const { searchParams, origin } = new URL(request.url);
+    const requestUrl = new URL(request.url);
+    const { searchParams } = requestUrl;
+
+    // Get origin from request URL - this will be correct for both local and production
+    // Use headers to get the host if needed (for better compatibility)
+    const host = request.headers.get("host") || requestUrl.host;
+    const protocol =
+        requestUrl.protocol ||
+        (host?.includes("localhost") ? "http:" : "https:");
+    const origin = `${protocol}//${host}`;
+
     const code = searchParams.get("code");
     const error = searchParams.get("error");
     const next = searchParams.get("next") ?? "/dashboard";
