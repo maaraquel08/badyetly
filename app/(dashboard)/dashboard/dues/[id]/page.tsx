@@ -248,7 +248,8 @@ export default function EditDuePage({ params }: EditDuePageProps) {
                 description: `${formData.title} has been updated.`,
             });
 
-            router.push("/dashboard/dues");
+            // Redirect to dashboard to see updated calendar
+            router.push("/dashboard");
             router.refresh();
         } catch (error) {
             console.error("Error updating due:", error);

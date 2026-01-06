@@ -133,6 +133,14 @@ export function DashboardCalendar({
                 .eq("id", dueId);
 
             if (error) {
+                console.error("Error marking as paid:", {
+                    error,
+                    message: error.message,
+                    details: error.details,
+                    hint: error.hint,
+                    code: error.code,
+                    updateData,
+                });
                 throw error;
             }
 
@@ -141,9 +149,27 @@ export function DashboardCalendar({
             if (onRefresh) {
                 onRefresh();
             }
-        } catch (error) {
-            console.error("Error marking as paid:", error);
-            toast.error("Failed to mark payment as paid. Please try again.");
+        } catch (error: any) {
+            console.error("Error marking as paid:", {
+                error,
+                message: error?.message,
+                details: error?.details,
+                hint: error?.hint,
+                code: error?.code,
+            });
+
+            // Extract a user-friendly error message
+            let errorMessage =
+                "Failed to mark payment as paid. Please try again.";
+            if (error?.message) {
+                errorMessage = error.message;
+            } else if (error?.details) {
+                errorMessage = error.details;
+            } else if (error?.hint) {
+                errorMessage = error.hint;
+            }
+
+            toast.error(errorMessage);
         } finally {
             setProcessing((prev) => ({ ...prev, [dueId]: false }));
         }
@@ -170,58 +196,24 @@ export function DashboardCalendar({
         setProcessing((prev) => ({ ...prev, [dueId]: true }));
 
         try {
-            // Try updating without paid_amount first to avoid column issues
-            let { error, data } = await supabase
+            const { error } = await supabase
                 .from("due_instances")
                 .update({
                     is_paid: false,
                     paid_on: null,
+                    paid_amount: null,
                 })
-                .eq("id", dueId)
-                .select();
-
-            // If successful and we want to clear paid_amount, try a second update
-            if (!error && data && data.length > 0) {
-                // Try to also clear paid_amount if the column exists
-                // Use a separate update to avoid issues if column doesn't exist
-                const { error: paidAmountError } = await supabase
-                    .from("due_instances")
-                    .update({ paid_amount: null })
-                    .eq("id", dueId);
-
-                // Ignore errors about paid_amount column not existing
-                if (paidAmountError) {
-                    const errorCode = paidAmountError.code || "";
-                    const errorMessage = paidAmountError.message || "";
-                    // PostgreSQL error code for undefined column
-                    if (
-                        errorCode !== "42703" &&
-                        !errorMessage.includes("paid_amount") &&
-                        !errorMessage.includes("column")
-                    ) {
-                        // Only log if it's not a column-not-found error
-                        console.warn(
-                            "Could not clear paid_amount:",
-                            paidAmountError
-                        );
-                    }
-                }
-            }
+                .eq("id", dueId);
 
             if (error) {
-                // Log error details before throwing
-                console.error("Supabase update error:", {
+                console.error("Error marking as unpaid:", {
+                    error,
                     message: error.message,
                     details: error.details,
                     hint: error.hint,
                     code: error.code,
-                    fullError: error,
                 });
                 throw error;
-            }
-
-            if (!data || data.length === 0) {
-                throw new Error("No rows were updated. The due instance may not exist.");
             }
 
             toast.success("The payment has been marked as unpaid.");
@@ -231,8 +223,9 @@ export function DashboardCalendar({
             }
         } catch (error: unknown) {
             // Better error handling for unknown error types
-            let errorMessage = "Failed to mark payment as unpaid. Please try again.";
-            
+            let errorMessage =
+                "Failed to mark payment as unpaid. Please try again.";
+
             if (error instanceof Error) {
                 errorMessage = error.message;
                 console.error("Error marking as unpaid:", error);
@@ -244,13 +237,13 @@ export function DashboardCalendar({
                     hint?: string;
                     code?: string;
                 };
-                
+
                 errorMessage =
                     supabaseError.message ||
                     supabaseError.details ||
                     supabaseError.hint ||
                     errorMessage;
-                
+
                 console.error("Error marking as unpaid:", {
                     message: supabaseError.message,
                     details: supabaseError.details,
@@ -261,7 +254,7 @@ export function DashboardCalendar({
             } else {
                 console.error("Unknown error type:", typeof error, error);
             }
-            
+
             toast.error(errorMessage);
         } finally {
             setProcessing((prev) => ({ ...prev, [dueId]: false }));
