@@ -2,7 +2,24 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs));
+    return twMerge(clsx(...inputs));
+}
+
+/**
+ * Get the correct redirect URL for OAuth callbacks
+ * Works in both client and server environments
+ */
+export function getRedirectUrl(path: string = "/auth/callback"): string {
+    // In client-side code
+    if (typeof window !== "undefined") {
+        return `${window.location.origin}${path}`;
+    }
+    
+    // In server-side code, use environment variable or fallback
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+    
+    return `${baseUrl}${path}`;
 }
 
 export function formatCurrency(amount: number | null | undefined): string {
