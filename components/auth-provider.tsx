@@ -102,18 +102,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const signInWithGoogle = async () => {
         try {
-            // Get the current origin to ensure correct redirect URL
-            // Use window.location.origin which automatically detects the correct URL
+            // Always use window.location.origin in client-side code
+            // This ensures the redirect URL matches the actual URL the user is on
             // (localhost:3000 in development, production URL in production)
-            // If NEXT_PUBLIC_SITE_URL is set, use it for production consistency
-            const origin = 
-                process.env.NEXT_PUBLIC_SITE_URL || 
-                window.location.origin;
+            const origin = window.location.origin;
             const redirectUrl = `${origin}/auth/callback`;
-            
+
             // Log for debugging
             console.log("OAuth redirect URL:", redirectUrl);
-            
+
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
@@ -124,11 +121,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     },
                 },
             });
-            
+
             if (error) {
                 console.error("OAuth sign-in error:", error);
             }
-            
+
             return { error };
         } catch (error) {
             console.error("OAuth sign-in exception:", error);
