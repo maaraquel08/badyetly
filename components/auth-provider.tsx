@@ -102,19 +102,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const signInWithGoogle = async () => {
         try {
+            // Get the current origin to ensure correct redirect URL
+            // Use window.location.origin which automatically detects the correct URL
+            // (localhost:3000 in development, production URL in production)
+            const origin = window.location.origin;
+            const redirectUrl = `${origin}/auth/callback`;
+            
+            // Log for debugging (remove in production if needed)
+            if (process.env.NODE_ENV === "development") {
+                console.log("OAuth redirect URL:", redirectUrl);
+            }
+            
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: `${window.location.origin}/auth/callback`,
+                    redirectTo: redirectUrl,
                     queryParams: {
                         access_type: "offline",
                         prompt: "select_account",
                     },
                 },
             });
+            
+            if (error) {
+                console.error("OAuth sign-in error:", error);
+            }
+            
             return { error };
         } catch (error) {
-            return { error };
+            console.error("OAuth sign-in exception:", error);
+            return { error: error as Error };
         }
     };
 
