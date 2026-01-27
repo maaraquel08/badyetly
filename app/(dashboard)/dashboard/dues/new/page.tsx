@@ -99,6 +99,72 @@ export default function NewDuePage() {
         try {
             const supabase = createClient();
 
+            // Verify user session
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dues/new/page.tsx:103',message:'Before checking user profile exists',data:{userId:user.id,sessionUserId:session?.user?.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+            // #endregion
+            if (sessionError || !session) {
+                console.error("Session error:", sessionError);
+                throw new Error("Authentication session not found");
+            }
+
+            // Check if user profile exists in public.users
+            const { data: userProfile, error: profileCheckError } = await supabase
+                .from("users")
+                .select("id")
+                .eq("id", user.id)
+                .maybeSingle();
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dues/new/page.tsx:110',message:'User profile check result',data:{userId:user.id,profileExists:!!userProfile,profileCheckError:profileCheckError?{message:profileCheckError.message,code:profileCheckError.code}:null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+            // #endregion
+
+            // If profile doesn't exist, create it using upsert to handle race conditions
+            if (!userProfile) {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dues/new/page.tsx:115',message:'Creating missing user profile',data:{userId:user.id,email:user.email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+                // #endregion
+                // Check if user exists first, then insert or update
+                const { data: existingProfile } = await supabase
+                    .from("users")
+                    .select("id")
+                    .eq("id", user.id)
+                    .maybeSingle();
+                
+                let createProfileError;
+                if (existingProfile) {
+                    // Update existing
+                    const result = await supabase
+                        .from("users")
+                        .update({
+                            email: user.email!,
+                            name: user.user_metadata?.name || null,
+                        })
+                        .eq("id", user.id);
+                    createProfileError = result.error;
+                } else {
+                    // Insert new
+                    const result = await supabase
+                        .from("users")
+                        .insert({
+                            id: user.id,
+                            email: user.email!,
+                            name: user.user_metadata?.name || null,
+                        });
+                    createProfileError = result.error;
+                }
+                
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dues/new/page.tsx:123',message:'User profile creation result',data:{userId:user.id,createProfileError:createProfileError?{message:createProfileError.message,code:createProfileError.code,details:createProfileError.details}:null,success:!createProfileError},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+                // #endregion
+                
+                if (createProfileError) {
+                    console.error("Failed to create user profile:", createProfileError);
+                    throw new Error(`Failed to create user profile: ${createProfileError.message}`);
+                }
+            }
+
             // Create the monthly due
             // Amount is already converted to number or null by the form component
             const amountValue =
@@ -107,34 +173,51 @@ export default function NewDuePage() {
                     ? formData.amount
                     : null;
 
+            const insertData = {
+                user_id: user.id,
+                title: formData.title.trim(),
+                amount: amountValue,
+                category: formData.category.trim(),
+                start_date: formData.start_date,
+                recurrence: formData.recurrence || "monthly",
+                recurrence_frequency: formData.recurrence_frequency || 1,
+                due_day: formData.due_day || null,
+                status: formData.status || "active",
+                notes: formData.notes?.trim() || null,
+                end_type: formData.end_type || "never",
+                end_date: formData.end_date || null,
+                occurrences: formData.occurrences || null,
+            };
+
+            console.log("Inserting monthly due with data:", {
+                ...insertData,
+                user_id: user.id,
+                session_user_id: session.user.id,
+            });
+
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dues/new/page.tsx:139',message:'Before inserting monthly_due',data:{userId:user.id,insertData},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
+
             const { data: monthlyDue, error: monthlyDueError } = await supabase
                 .from("monthly_dues")
-                .insert({
-                    user_id: user.id,
-                    title: formData.title.trim(),
-                    amount: amountValue,
-                    category: formData.category.trim(),
-                    start_date: formData.start_date,
-                    recurrence: formData.recurrence || "monthly",
-                    recurrence_frequency: formData.recurrence_frequency || 1,
-                    due_day: formData.due_day || null,
-                    status: formData.status || "active",
-                    notes: formData.notes?.trim() || null,
-                    end_type: formData.end_type || "never",
-                    end_date: formData.end_date || null,
-                    occurrences: formData.occurrences || null,
-                })
+                .insert(insertData)
                 .select()
                 .single();
 
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dues/new/page.tsx:145',message:'After inserting monthly_due',data:{userId:user.id,error:monthlyDueError?{message:monthlyDueError.message,code:monthlyDueError.code,details:monthlyDueError.details}:null,success:!monthlyDueError},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
+
             if (monthlyDueError) {
-                console.error("Error creating monthly due:", {
-                    error: monthlyDueError,
-                    message: monthlyDueError.message,
-                    details: monthlyDueError.details,
-                    hint: monthlyDueError.hint,
-                    code: monthlyDueError.code,
-                });
+                const errorDetails = {
+                    message: monthlyDueError?.message,
+                    details: monthlyDueError?.details,
+                    hint: monthlyDueError?.hint,
+                    code: monthlyDueError?.code,
+                };
+                console.error("Error creating monthly due:", errorDetails);
+                console.error("Full error object:", monthlyDueError);
                 throw monthlyDueError;
             }
 

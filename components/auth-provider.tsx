@@ -37,8 +37,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     error,
                 } = await supabase.auth.getSession();
 
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-provider.tsx:35',message:'Initial session check',data:{hasSession:!!session,userId:session?.user?.id,error:error?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+                // #endregion
+
                 setUser(session?.user ?? null);
                 setLoading(false);
+
+                // Ensure profile exists for initial session
+                if (session?.user) {
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-provider.tsx:45',message:'Initial session - calling handleUserProfile',data:{userId:session.user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+                    // #endregion
+                    setTimeout(() => {
+                        handleUserProfile(session.user);
+                    }, 0);
+                }
             } catch (error) {
                 setLoading(false);
             }
@@ -56,6 +70,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // Handle user profile creation on sign up - use setTimeout to make non-blocking
             if (event === "SIGNED_IN" && session?.user) {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-provider.tsx:58',message:'SIGNED_IN event detected',data:{userId:session.user.id,event},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+                // #endregion
                 setTimeout(() => {
                     handleUserProfile(session.user);
                 }, 0);
@@ -68,6 +85,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const handleUserProfile = async (user: User) => {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-provider.tsx:70',message:'handleUserProfile called',data:{userId:user.id,email:user.email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
         try {
             // Prepare user data with enhanced Google OAuth metadata
             const userData = {
@@ -82,9 +102,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         : null),
             };
 
-            const { error } = await supabase.from("users").upsert(userData);
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-provider.tsx:85',message:'Before upsert userData',data:{userData},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
+
+            // Use upsert - if user exists (by id), update; otherwise insert
+            // First try to find existing user by id
+            const { data: existingUser } = await supabase
+                .from("users")
+                .select("id")
+                .eq("id", user.id)
+                .maybeSingle();
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-provider.tsx:88',message:'Checking existing user before upsert',data:{userId:user.id,existingUser:!!existingUser},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
+
+            let error, data;
+            if (existingUser) {
+                // Update existing user
+                const result = await supabase
+                    .from("users")
+                    .update({ email: userData.email, name: userData.name })
+                    .eq("id", user.id)
+                    .select();
+                error = result.error;
+                data = result.data;
+            } else {
+                // Insert new user
+                const result = await supabase
+                    .from("users")
+                    .insert(userData)
+                    .select();
+                error = result.error;
+                data = result.data;
+            }
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-provider.tsx:86',message:'After upsert result',data:{error:error?{message:error.message,code:error.code,details:error.details}:null,data:data?.[0]?.id||null,success:!error},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
         } catch (error) {
-            // Handle error silently
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/cd661417-c9be-401a-bf82-ea8f660b1f19',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-provider.tsx:87',message:'handleUserProfile catch error',data:{error:String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
         }
     };
 
