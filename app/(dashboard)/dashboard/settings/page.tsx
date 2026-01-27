@@ -120,14 +120,6 @@ export default function SettingsPage() {
                     const errorKeys = Object.keys(updateError);
                     const errorString = JSON.stringify(updateError);
                     
-                    console.log("Update attempt:", {
-                        hasErrorObject: true,
-                        errorKeys,
-                        errorKeysLength: errorKeys.length,
-                        errorStringified: errorString,
-                        isEmptyObject: errorString === '{}',
-                    });
-                    
                     // Only consider it a real error if:
                     // 1. It has keys AND
                     // 2. At least one of those keys has a non-empty value
@@ -138,22 +130,16 @@ export default function SettingsPage() {
                         
                         hasRealError = hasMessage || hasCode || hasDetails;
                     }
-                } else {
-                    console.log("Update attempt: No error object");
                 }
 
                 // Only throw if there's a REAL error with actual content
                 // Empty {} means the operation likely succeeded
                 if (hasRealError) {
-                    console.error("Update error detected:", updateError);
                     throw new Error(
                         updateError.message ||
                             updateError.details ||
                             "Failed to update monthly salary"
                     );
-                } else if (updateError) {
-                    // Empty error object {} - operation likely succeeded, just verify
-                    console.log("Update returned empty error object (likely succeeded), verifying...");
                 }
 
                 // Verify the update worked
@@ -162,23 +148,15 @@ export default function SettingsPage() {
                     .select("monthly_salary")
                     .eq("id", user.id)
                     .single();
-                
-                // Log verification result (ignore empty error objects)
-                if (verifyError && JSON.stringify(verifyError) !== '{}') {
-                    console.warn("Verification query had error:", verifyError);
-                }
 
                 if (verifyData && verifyData.monthly_salary === salaryValue) {
                     saveSuccess = true;
-                    console.log("Salary updated and verified:", verifyData);
                 } else if (verifyData) {
                     // Value doesn't match - update may have failed silently
-                    console.warn("Update verification failed, trying insert...");
                     // Fall through to insert
                 } else {
                     // Can't verify - might be RLS, but assume it worked
                     saveSuccess = true;
-                    console.log("Update completed (could not verify due to permissions)");
                 }
             }
 
@@ -200,14 +178,6 @@ export default function SettingsPage() {
                     const errorKeys = Object.keys(insertError);
                     const errorString = JSON.stringify(insertError);
                     
-                    console.log("Insert attempt:", {
-                        hasErrorObject: true,
-                        errorKeys,
-                        errorKeysLength: errorKeys.length,
-                        errorStringified: errorString,
-                        isEmptyObject: errorString === '{}',
-                    });
-                    
                     // Only consider it a real error if it has keys AND is not empty {}
                     if (errorKeys.length > 0 && errorString !== '{}') {
                         const hasMessage = insertError.message && String(insertError.message).trim() !== '';
@@ -216,14 +186,11 @@ export default function SettingsPage() {
                         
                         hasRealInsertError = hasMessage || hasCode || hasDetails;
                     }
-                } else {
-                    console.log("Insert attempt: No error object");
                 }
 
                 if (hasRealInsertError) {
                     // If insert fails and it's not a duplicate key error, throw
                     if (insertError.code !== '23505') { // 23505 is duplicate key
-                        console.error("Insert error:", insertError);
                         throw new Error(
                             insertError.message ||
                                 insertError.details ||
@@ -237,11 +204,6 @@ export default function SettingsPage() {
                         .select("monthly_salary")
                         .eq("id", user.id)
                         .single();
-                    
-                    // Ignore empty error objects from verification
-                    if (verifyError2 && JSON.stringify(verifyError2) !== '{}') {
-                        console.warn("Verification query had error:", verifyError2);
-                    }
 
                     if (verifyData && verifyData.monthly_salary !== salaryValue) {
                         // Record exists but value is wrong, try update again
@@ -272,19 +234,12 @@ export default function SettingsPage() {
                     .select("monthly_salary")
                     .eq("id", user.id)
                     .single();
-                
-                // Ignore empty error objects from verification
-                if (verifyError3 && JSON.stringify(verifyError3) !== '{}') {
-                    console.warn("Verification query had error:", verifyError3);
-                }
 
                 if (verifyData && verifyData.monthly_salary === salaryValue) {
                     saveSuccess = true;
-                    console.log("Salary inserted and verified:", verifyData);
                 } else if (!verifyData) {
                     // Can't verify - might be RLS, but assume it worked
                     saveSuccess = true;
-                    console.log("Insert completed (could not verify due to permissions)");
                 } else {
                     throw new Error("Salary was not saved correctly. Please try again.");
                 }
@@ -302,14 +257,6 @@ export default function SettingsPage() {
             // Trigger profile refresh in sidebar
             refreshProfile();
         } catch (error) {
-            console.error("Error updating profile:", {
-                error,
-                type: typeof error,
-                keys: error ? Object.keys(error) : [],
-                message: error instanceof Error ? error.message : undefined,
-                stringified: JSON.stringify(error, null, 2),
-            });
-            
             let errorMessage = "Failed to update your profile. Please try again.";
             
             if (error instanceof Error) {
@@ -374,7 +321,6 @@ export default function SettingsPage() {
                 .eq("user_id", user.id);
 
             if (fetchError) {
-                console.error("Error fetching monthly dues:", fetchError);
                 throw new Error("Failed to fetch monthly dues");
             }
 
@@ -388,10 +334,6 @@ export default function SettingsPage() {
                     .in("monthly_due_id", monthlyDueIds);
 
                 if (dueInstancesError) {
-                    console.error(
-                        "Error deleting due instances:",
-                        dueInstancesError
-                    );
                     throw new Error("Failed to delete due instances");
                 }
             }
@@ -403,7 +345,6 @@ export default function SettingsPage() {
                 .eq("user_id", user.id);
 
             if (monthlyDuesError) {
-                console.error("Error deleting monthly dues:", monthlyDuesError);
                 throw new Error("Failed to delete monthly dues");
             }
 
@@ -414,7 +355,6 @@ export default function SettingsPage() {
                 .eq("id", user.id);
 
             if (userError) {
-                console.error("Error deleting user profile:", userError);
                 throw new Error("Failed to delete user profile");
             }
 
@@ -422,10 +362,6 @@ export default function SettingsPage() {
             const authDeleteResult = await deleteUserAccount(user.id);
 
             if (!authDeleteResult.success) {
-                console.warn(
-                    "Auth user deletion failed:",
-                    authDeleteResult.error
-                );
                 // Continue with manual sign out if auth deletion fails
             }
 
@@ -441,7 +377,6 @@ export default function SettingsPage() {
             // Redirect to home page
             router.push("/");
         } catch (error) {
-            console.error("Account deletion error:", error);
             toast({
                 title: "Error deleting account",
                 description:

@@ -99,6 +99,56 @@ export default function NewDuePage() {
         try {
             const supabase = createClient();
 
+            // Verify user session
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !session) {
+                throw new Error("Authentication session not found");
+            }
+
+            // Check if user profile exists in public.users
+            const { data: userProfile, error: profileCheckError } = await supabase
+                .from("users")
+                .select("id")
+                .eq("id", user.id)
+                .maybeSingle();
+
+            // If profile doesn't exist, create it using upsert to handle race conditions
+            if (!userProfile) {
+                // Check if user exists first, then insert or update
+                const { data: existingProfile } = await supabase
+                    .from("users")
+                    .select("id")
+                    .eq("id", user.id)
+                    .maybeSingle();
+                
+                let createProfileError;
+                if (existingProfile) {
+                    // Update existing
+                    const result = await supabase
+                        .from("users")
+                        .update({
+                            email: user.email!,
+                            name: user.user_metadata?.name || null,
+                        })
+                        .eq("id", user.id);
+                    createProfileError = result.error;
+                } else {
+                    // Insert new
+                    const result = await supabase
+                        .from("users")
+                        .insert({
+                            id: user.id,
+                            email: user.email!,
+                            name: user.user_metadata?.name || null,
+                        });
+                    createProfileError = result.error;
+                }
+                
+                if (createProfileError) {
+                    throw new Error(`Failed to create user profile: ${createProfileError.message}`);
+                }
+            }
+
             // Create the monthly due
             // Amount is already converted to number or null by the form component
             const amountValue =
@@ -107,34 +157,29 @@ export default function NewDuePage() {
                     ? formData.amount
                     : null;
 
+            const insertData = {
+                user_id: user.id,
+                title: formData.title.trim(),
+                amount: amountValue,
+                category: formData.category.trim(),
+                start_date: formData.start_date,
+                recurrence: formData.recurrence || "monthly",
+                recurrence_frequency: formData.recurrence_frequency || 1,
+                due_day: formData.due_day || null,
+                status: formData.status || "active",
+                notes: formData.notes?.trim() || null,
+                end_type: formData.end_type || "never",
+                end_date: formData.end_date || null,
+                occurrences: formData.occurrences || null,
+            };
+
             const { data: monthlyDue, error: monthlyDueError } = await supabase
                 .from("monthly_dues")
-                .insert({
-                    user_id: user.id,
-                    title: formData.title.trim(),
-                    amount: amountValue,
-                    category: formData.category.trim(),
-                    start_date: formData.start_date,
-                    recurrence: formData.recurrence || "monthly",
-                    recurrence_frequency: formData.recurrence_frequency || 1,
-                    due_day: formData.due_day || null,
-                    status: formData.status || "active",
-                    notes: formData.notes?.trim() || null,
-                    end_type: formData.end_type || "never",
-                    end_date: formData.end_date || null,
-                    occurrences: formData.occurrences || null,
-                })
+                .insert(insertData)
                 .select()
                 .single();
 
             if (monthlyDueError) {
-                console.error("Error creating monthly due:", {
-                    error: monthlyDueError,
-                    message: monthlyDueError.message,
-                    details: monthlyDueError.details,
-                    hint: monthlyDueError.hint,
-                    code: monthlyDueError.code,
-                });
                 throw monthlyDueError;
             }
 
@@ -147,13 +192,6 @@ export default function NewDuePage() {
                 .insert(dueInstances);
 
             if (instancesError) {
-                console.error("Error creating due instances:", {
-                    error: instancesError,
-                    message: instancesError.message,
-                    details: instancesError.details,
-                    hint: instancesError.hint,
-                    code: instancesError.code,
-                });
                 throw instancesError;
             }
 
@@ -164,14 +202,6 @@ export default function NewDuePage() {
 
             router.push("/dashboard");
         } catch (error: any) {
-            console.error("Error creating due:", {
-                error,
-                message: error?.message,
-                details: error?.details,
-                hint: error?.hint,
-                code: error?.code,
-            });
-
             // Extract a user-friendly error message
             let errorMessage =
                 "There was an error creating your monthly due. Please try again.";

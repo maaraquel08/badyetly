@@ -29,16 +29,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
 
     useEffect(() => {
-        // Get initial session
-        const getInitialSession = async () => {
-            try {
-                const {
-                    data: { session },
-                    error,
-                } = await supabase.auth.getSession();
+                // Get initial session
+                const getInitialSession = async () => {
+                    try {
+                        const {
+                            data: { session },
+                            error,
+                        } = await supabase.auth.getSession();
 
-                setUser(session?.user ?? null);
-                setLoading(false);
+                        setUser(session?.user ?? null);
+                        setLoading(false);
+
+                        // Ensure profile exists for initial session
+                        if (session?.user) {
+                            setTimeout(() => {
+                                handleUserProfile(session.user);
+                            }, 0);
+                        }
             } catch (error) {
                 setLoading(false);
             }
@@ -82,9 +89,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         : null),
             };
 
-            const { error } = await supabase.from("users").upsert(userData);
+            // Use upsert - if user exists (by id), update; otherwise insert
+            // First try to find existing user by id
+            const { data: existingUser } = await supabase
+                .from("users")
+                .select("id")
+                .eq("id", user.id)
+                .maybeSingle();
+
+            let error, data;
+            if (existingUser) {
+                // Update existing user
+                const result = await supabase
+                    .from("users")
+                    .update({ email: userData.email, name: userData.name })
+                    .eq("id", user.id)
+                    .select();
+                error = result.error;
+                data = result.data;
+            } else {
+                // Insert new user
+                const result = await supabase
+                    .from("users")
+                    .insert(userData)
+                    .select();
+                error = result.error;
+                data = result.data;
+            }
         } catch (error) {
-            // Handle error silently
+            // Silently handle errors
         }
     };
 
@@ -108,9 +141,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const origin = window.location.origin;
             const redirectUrl = `${origin}/auth/callback`;
 
-            // Log for debugging
-            console.log("OAuth redirect URL:", redirectUrl);
-
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
@@ -122,13 +152,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 },
             });
 
-            if (error) {
-                console.error("OAuth sign-in error:", error);
-            }
-
             return { error };
         } catch (error) {
-            console.error("OAuth sign-in exception:", error);
             return { error: error as Error };
         }
     };
